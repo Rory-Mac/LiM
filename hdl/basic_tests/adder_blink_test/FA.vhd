@@ -1,6 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use work.HalfAdder.all;
+use work.HalfAdder;
 
 entity FullAdder is
 port (A, B, Cin: in std_logic;
