@@ -12,6 +12,7 @@ architecture RippleCarryAdder32TestBenchBehaviour of RippleCarryAdder32TestBench
     signal Cout: std_logic;
 begin
     RippleCarryInstance : entity work.RippleCarryAdder32 port map (A => A, B => B, Cin => Cin, Sum => Sum, Cout => Cout);
+
     TestBenchProcess : process
     constant waitPeriod: time := 1 ps;
     begin
