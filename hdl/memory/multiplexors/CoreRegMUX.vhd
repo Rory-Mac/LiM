@@ -1,16 +1,10 @@
 library ieee;
 use ieee.std_logic_1164.all;
-
-package my_package is
-    type vector_array is array (natural range <>) of std_logic_vector(0 to 31);
-end package;
-
-library ieee;
-use ieee.std_logic_1164.all;
-use work.my_package.all;
+use work.array_package.all;
 
 entity CoreRegMux is
 port (A : in vector_array(0 to 31); 
+    Sel: in std_logic_vector(0 to 4);
     X : out std_logic_vector(0 to 31));
 end CoreRegMux;
 
@@ -20,17 +14,20 @@ architecture CoreRegMuxLogic of CoreRegMux is
     signal MuxOut : std_logic_vector(0 to 31);
 begin
     generateMux32 : for i in 0 to 31 generate
-        Mux32instance : entity work.Mux32 port map (A => MuxInputs(i), Sel => MuxSelectors, X => MuxOut);
+        Mux32instance : entity work.Mux32 port map (A => MuxInputs(i), Sel => MuxSelectors, X => MuxOut(i));
     end generate generateMux32;
 
-    process
+    process (A)
     begin
         for i in 0 to 31 loop
             for j in 0 to 31 loop
-                MuxInputs(i)(j) <= vector_array(j)(i);
+                MuxInputs(i)(j) <= A(j)(i);
             end loop;
         end loop;
     end process;
+
+    MuxSelectors <= Sel;
+    X <= MuxOut;
 
 end CoreRegMuxLogic;
 
