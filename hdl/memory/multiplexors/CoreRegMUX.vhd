@@ -21,12 +21,14 @@ architecture CoreRegMuxLogic of CoreRegMux is
 begin
     generateMux32 : for i in 0 to 31 generate
         Mux32instance : entity work.Mux32 port map (A => MuxInputs(i), Sel => MuxSelectors, X => MuxOut);
-    end generateMux32;
+    end generate generateMux32;
 
-    process (A)
+    process
     begin
         for i in 0 to 31 loop
-        
+            for j in 0 to 31 loop
+                MuxInputs(i)(j) <= vector_array(j)(i);
+            end loop;
         end loop;
     end process;
 
