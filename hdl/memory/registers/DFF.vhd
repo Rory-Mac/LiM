@@ -14,4 +14,4 @@ begin
             q <= d;
         end if;
     end process;
-end architecture;
+end DFFLogic;
