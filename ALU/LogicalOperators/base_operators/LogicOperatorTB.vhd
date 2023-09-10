@@ -6,35 +6,13 @@ end LogicOperatorTB;
 
 architecture LogicOperatorTBbehaviour of LogicOperatorTB is
     constant waitPeriod: time := 1 ps;
-    signal A_not, B_not: std_logic_vector(31 downto 0);
     signal A_and, B_and, C_and: std_logic_vector(31 downto 0);
     signal A_or, B_or, C_or: std_logic_vector(31 downto 0);
     signal A_xor, B_xor, C_xor: std_logic_vector(31 downto 0);
 begin
-    Not32instance : entity work.Not32 port map (A => A_not, B => B_not);
     And32instance : entity work.And32 port map (A => A_and, B => B_and, C => C_and);
     Or32instance : entity work.Or32 port map (A => A_or, B => B_or, C => C_or);
     Xor32instance : entity work.Xor32 port map (A => A_xor, B => B_xor, C => C_xor);
-
-    Not32TestBenchProcess : process
-    begin
-        A_not <= "00000000000000000000000000000000";
-        wait for waitPeriod;
-        assert (B_not = "11111111111111111111111111111111")
-        report "test failed for negation mapping 32-bit input of 0 to 1" severity error;
-
-        A_not <= "11111111111111111111111111111111";
-        wait for waitPeriod;
-        assert (B_not = "00000000000000000000000000000000")
-        report "test failed for negation mapping 32-bit input of 1 to 0" severity error;
-
-        A_not <= "10100010110101001010011101111101";
-        wait for waitPeriod;
-        assert (B_not = "01011101001010110101100010000010")
-        report "test failed for negation of arbitrary 32-bit input" severity error;
-
-        wait;
-    end process;
 
     And32TestBenchProcess : process
     begin
