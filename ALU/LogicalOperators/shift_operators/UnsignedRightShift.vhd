@@ -11,6 +11,7 @@ end entity;
 architecture UnsignedRightShiftLogic of UnsignedRightShift is
     signal muxA, muxB, mux_out: vector_array(1 to 5);
     signal mux_sels: std_logic_vector(1 to 5);
+    signal reversed_input: std_logic_vector(0 to 31);
 begin
     generateMuxLayers : for i in 1 to 5 generate
         generateMuxLayer : for j in 0 to 31 generate
@@ -23,10 +24,11 @@ begin
     end generate;
 
     reverseInput : for i in 0 to 31 generate
-        muxA(1)(i) <= d(31 - i);
+        reversed_input(i) <= d(31 - i);
     end generate;
-
-    muxB(1)(0 to 30) <= d(1 to 31);
+    
+    muxA(1) <= reversed_input;
+    muxB(1)(0 to 30) <= reversed_input(1 to 31);
     muxB(1)(31) <= '0';
     muxA(2) <= mux_out(1);
     muxB(2)(0 to 29) <= mux_out(1)(2 to 31);
