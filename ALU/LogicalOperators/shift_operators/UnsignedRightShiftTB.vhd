@@ -11,7 +11,7 @@ architecture UnsignedRightShiftTBLogic of UnsignedRightShiftTB is
 begin
     UnsignedRightShiftTBLogic : entity work.UnsignedRightShift port map (d => d, sel => sel, q => q);
 
-    UnsignedLeftShiftTestbench : process
+    UnsignedRightShiftTestbench : process
     constant waitPeriod : time := 1 ps;
     begin
         d <= "10000000000000000000000000000000";
