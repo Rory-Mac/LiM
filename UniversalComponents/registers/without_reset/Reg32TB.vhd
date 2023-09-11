@@ -28,26 +28,26 @@ begin
         d <= "00000000000000000000000000000000";
         l <= '0';
         wait for CLOCK_PERIOD;
-        assert (q = "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU") report "testbench failed for Reg1 case 1" severity error;
+        assert (q = "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU") report "testbench failed for Reg32 case 1" severity error;
 
         d <= "00000000000000000000000000000000";
         l <= '1';
         wait for CLOCK_PERIOD;
-        assert (q = "00000000000000000000000000000000") report "testbench failed for Reg1 case 2" severity error;
+        assert (q = "00000000000000000000000000000000") report "testbench failed for Reg32 case 2" severity error;
 
         d <= "11111111111111111111111111111111";
         l <= '0';
         wait for CLOCK_PERIOD;
-        assert (q = "00000000000000000000000000000000") report "testbench failed for Reg1 case 3" severity error;
+        assert (q = "00000000000000000000000000000000") report "testbench failed for Reg32 case 3" severity error;
         wait for 10 * CLOCK_PERIOD;
-        assert (q = "00000000000000000000000000000000") report "testbench failed for Reg1 case 4" severity error;
+        assert (q = "00000000000000000000000000000000") report "testbench failed for Reg32 case 4" severity error;
 
         d <= "11111111111111111111111111111111";
         l <= '1';
         wait for CLOCK_PERIOD;
-        assert (q = "11111111111111111111111111111111") report "testbench failed for Reg1 case 5" severity error;
+        assert (q = "11111111111111111111111111111111") report "testbench failed for Reg32 case 5" severity error;
         wait for 10 * CLOCK_PERIOD;
-        assert (q = "11111111111111111111111111111111") report "testbench failed for Reg1 case 6" severity error;
+        assert (q = "11111111111111111111111111111111") report "testbench failed for Reg32 case 6" severity error;
 
         wait;
     end process;
