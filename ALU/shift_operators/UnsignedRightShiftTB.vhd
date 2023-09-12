@@ -6,8 +6,8 @@ entity UnsignedRightShiftTB is
 end UnsignedRightShiftTB;
 
 architecture UnsignedRightShiftTBLogic of UnsignedRightShiftTB is
-    signal sel : std_logic_vector(0 to 4);
-    signal d, q : std_logic_vector(0 to 31);
+    signal sel : unsigned(0 to 4);
+    signal d, q : signed(0 to 31);
 begin
     UnsignedRightShiftTBLogic : entity work.UnsignedRightShift port map (d => d, sel => sel, q => q);
 
