@@ -6,12 +6,12 @@ entity SignedRightShiftTB is
 end SignedRightShiftTB;
 
 architecture SignedRightShiftTBLogic of SignedRightShiftTB is
-    signal sel : std_logic_vector(0 to 4);
-    signal d, q : std_logic_vector(0 to 31);
+    signal sel : unsigned(0 to 4);
+    signal d, q : signed(0 to 31);
 begin
     SignedRightShiftTBLogic : entity work.SignedRightShift port map (d => d, sel => sel, q => q);
 
-    SignedLeftShiftTestbench : process
+    SignedRightShiftTestbench : process
     constant waitPeriod : time := 1 ps;
     begin
         d <= "10000000000000000000000000000000";

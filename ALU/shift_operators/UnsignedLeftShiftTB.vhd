@@ -7,7 +7,7 @@ end UnsignedLeftShiftTB;
 
 architecture UnsignedLeftShiftTBLogic of UnsignedLeftShiftTB is
     signal sel : unsigned(0 to 4);
-    signal d, q : signed(0 to 31);
+    signal d, q : unsigned(0 to 31);
 begin
     UnsignedLeftShiftInstance : entity work.UnsignedLeftShift port map (d => d, sel => sel, q => q);
 

@@ -7,7 +7,7 @@ end UnsignedRightShiftTB;
 
 architecture UnsignedRightShiftTBLogic of UnsignedRightShiftTB is
     signal sel : unsigned(0 to 4);
-    signal d, q : signed(0 to 31);
+    signal d, q : unsigned(0 to 31);
 begin
     UnsignedRightShiftTBLogic : entity work.UnsignedRightShift port map (d => d, sel => sel, q => q);
 
