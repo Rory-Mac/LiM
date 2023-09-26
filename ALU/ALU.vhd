@@ -14,60 +14,79 @@ port (
 end entity;
 
 architecture ALULogic of ALU is
-    signal A, B: signed(0 to 63); 
+signal imm_msb_extended : signed(0 to 63);
+signal imm_zero_extended : unsigned(0 to 63); 
 begin
-    A <= signed(rs1);
+    imm_msb_extended <= resize(signed(imm), 64);
+    imm_zero_extended <= resize(unsigned(imm), 64);
     process (opcode)
     begin
-        # if R-formatted instruction, take rs2 as B signal
         if opcode = "0110011" then
-            B <= signed(rs2);
-        # if I-formatted instruction, take signed imm as B signal unless sltu
+            case funct3 is
+                when "000" =>
+                    if funct7 = "00000000" then
+                        rd <= signed(rs1) + signed(rs2);
+                    elsif funct7 = "0100000" then
+                        rd <= signed(rs1) - signed(rs2);
+                    end if;
+                when "100" =>
+                    rd <= rs1 xor rs2;
+                when "110" =>
+                    rd <= rs1 or rs2;
+                when "111" =>
+                    rd <= rs1 and rs2;
+                when "001" =>
+                    rd <= shift_left(rs1, unsigned(rs2(58 to 63)));
+                when "101" =>
+                    if funct7 = "0000000" then
+                        rd <= shift_right(unsigned(rs1), unsigned(rs2(58 to 63)));
+                    elsif funct7 = "0100000" then
+                        rd <= shift_right(signed(rs1), unsigned(rs2(58 to 63)));
+                    end if;
+                when "010" =>
+                    if signed(rs1) <= signed(rs2) then
+                        rd <= (63 => 1, others => 0);
+                    else
+                        rd <= (others => 0);
+                    end if;
+                when "011" =>
+                    if unsigned(rs1) <= unsigned(rs2) then
+                        rd <= (63 => 1, others => 0);
+                    else
+                        rd <= (others => 0);
+                    end if;
+            end case;
         elsif opcode = "0010011" then
-            if funct3 = "011" then
-                B <= unsigned(imm);
-            else
-                B <= signed(imm);
-            end if;
+            case funct3 is
+                when "000" =>
+                    rd <= signed(rs1) + imm_msb_extended;
+                when "100" =>
+                    rd <= rs1 xor imm_msb_extended;
+                when "110" =>
+                    rd <= rs1 or imm_msb_extended;
+                when "111" =>
+                    rd <= rs1 and imm_msb_extended;
+                when "001" =>
+                    rd <= shift_left(rs1, unsigned(imm));
+                when "101" =>
+                    if funct7 = "0000000" then
+                        rd <= shift_right(unsigned(rs1), unsigned(imm));
+                    elsif funct7 = "0100000" then
+                        rd <= shift_right(signed(rs1), unsigned(imm));
+                    end if;
+                when "010" =>
+                    if signed(rs1) <= imm_msb_extended then
+                        rd <= (63 => 1, others => 0);
+                    else
+                        rd <= (others => 0);
+                    end if;
+                when "011" =>
+                    if unsigned(rs1) <= imm_zero_extended then
+                        rd <= (63 => 1, others => 0);
+                    else
+                        rd <= (others => 0);
+                    end if;
+            end case;
         end if;
-    end process;
-    process (A, B)
-    begin 
-        case funct3 is 
-            when "000" => 
-                if funct7(2) = '1' then
-                    rd <= A - B;
-                elsif funct7(2) = '0' then
-                    rd <= A + B;
-                end if;
-            when "001" =>
-                rd <= shift_left(to_unsigned(A), B(58 to 63));
-            when "010" => 
-                if A <= B then
-                    rd <= (0 => '1', others => '0');
-                else
-                    rd <= (others => '0');
-                end if;
-            when "011" =>
-                if to_unsigned(A) <= to_unsigned(B) then
-                    rd <= (0 => '1', others => '0');
-                else
-                    rd <= (others => '1');
-                end if;
-            when "100" =>
-                rd <= A xor B;
-            when "101" =>
-                if funct7(2) = '1' then
-                    rd <= shift_right(to_unsigned(A), B(58 to 63));
-                elsif funct7(2) = '0' then
-                    rd <= shift_right(A, B(58 to 63));
-                end if;
-            when "110" =>
-                rd <= A or B;
-            when "111" =>
-                rd <= A and B;
-            when others =>
-                rd <= (others => 'U');
-        end case;
     end process;
 end architecture;
