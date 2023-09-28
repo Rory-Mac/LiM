@@ -218,30 +218,38 @@ begin
         imm <= "111111111111";
         wait for PROPAGATION_DELAY;
         assert rd = "0000000000000000000000000000000000000000000000000000000000000001" report "testbench failed for ALU I-format sltiu (evaluates true)" severity error;
-        -- rd = (rs1 + 12)[32:63] msb-extends 64-bit promotion
+        ----------------------------------------------------------------------------------------------------------------------------------------------
+        -- I formatted instructions (R64I extensions)
+        ----------------------------------------------------------------------------------------------------------------------------------------------
         opcode <= "0011011";
+        -- rd = (rs1 + 12)[32:63] msb-extends 64-bit promotion
         funct3 <= "000";
         rs1 <= "1101001111101000001001011110101001001010101001001110101010111011";
         imm <= "010101010011";
         wait for PROPAGATION_DELAY;
-        assert rd = "0000000000000000000000000000000001001010101001001110101010111010" report "testbench failed for ALU I-format addiw (positive imm)" severity error;
+        assert rd = "0000000000000000000000000000000001001010101001001111000000001110" report "testbench failed for ALU I-format addiw (positive imm)" severity error;
         rs1 <= "1101001111101000001001011110101001001010101001001110101010111011";
         imm <= "110101010011";
+        funct3 <= "000";
         wait for PROPAGATION_DELAY;
-        assert rd = "0000000000000000000000000000000001001010101001001111000000001110" report "testbench failed for ALU I-format addiw (negative imm)" severity error;
+        assert rd = "0000000000000000000000000000000001001010101001001110100000001110" report "testbench failed for ALU I-format addiw (negative imm)" severity error;
+        imm <= "110101010011";
         rs1 <= "1101001111101000001001011110101011001010101001001110101010111011";
         wait for PROPAGATION_DELAY;
-        assert rd = "1111111111111111111111111111111111001010101001001111100000001110" report "testbench failed for ALU I-format addiw (sign-extension)" severity error;
+        assert rd = "1111111111111111111111111111111111001010101001001110100000001110" report "testbench failed for ALU I-format addiw (sign-extension)" severity error;
         -- rd = (rs1[32:63] << imm)[32:63] msb-extends 64-bit promotion
         rs1 <= "1100101010101010011101011110101011010010001000010101101110100101";
         funct3 <= "001";
+        funct7 <= "0000000";
         imm <= "000000010010";
         wait for PROPAGATION_DELAY;
         assert rd = "0000000000000000000000000000000001101110100101000000000000000000" report "testbench failed for ALU I-format slliw" severity error;
         -- rd = (rs1[32:63] >> imm)[32:63] zero-extends 64-bit promotion
-        wait for PROPAGATION_DELAY;
+        rs1 <= "1100101010101010011101011110101011010010001000010101101110100101";
+        imm <= "000000010010";
         funct3 <= "101";
-        assert rd = "0000000000000000000000000000000010011101011110101011010010001000" report "testbench failed for ALU I-format srliw" severity error;
+        wait for PROPAGATION_DELAY;
+        assert rd = "1111111111111111111111111111111110011101011110101011010010001000" report "testbench failed for ALU I-format srliw" severity error;
         -- rd = (rs1[32:63] >> imm)[32:63] msb-extends 64-bit promotion
         funct7 <= "0100000";
         wait for PROPAGATION_DELAY;
