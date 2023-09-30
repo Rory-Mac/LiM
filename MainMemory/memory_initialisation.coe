@@ -1,7 +1,0 @@
-memory_initialization_radix=2;
-memory_initialisation_vector=
-0000,
-0000,
-0000,
-...
-0000;
