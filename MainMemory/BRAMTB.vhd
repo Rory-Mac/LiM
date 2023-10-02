@@ -18,8 +18,10 @@ begin
         data_in(63 downto 0) => data_in(63 downto 0),
         data_out(63 downto 0) => data_out(63 downto 0),
         instr_addr(15 downto 0) => instr_addr(15 downto 0),
+        instr_in(63 downto 0) => instr_in(63 downto 0),
         instr_out(63 downto 0) => instr_out(63 downto 0),
         w_data => w_data,
+        w_instr => w_instr
     );
 
     ClockProcess : process
@@ -35,7 +37,7 @@ begin
 
     BRAMTestBench : process
     begin
-        -- test write to and read from registers
+        -- test write data to and read data from registers
         w_data <= '1';
         data_addr <= "0000000000000000";
         data_in <= "0101010101010101010101010101010101010101010101010101010101010101";
@@ -46,58 +48,76 @@ begin
         wait for CLOCK_PERIOD;
         assert data_out = "0011001100110011001100110011001100110011001100110011001100110011" report "testbench failed for CoreRegisters BRAM case 2" severity error;
         data_addr <= "1111111111111110";
-        data_in <= "0000111100001111000011110000111100001111000011110000111100001111" report "testbench failed for CoreRegisters BRAM case 3" severity error;
+        data_in <= "0000111100001111000011110000111100001111000011110000111100001111";
         wait for CLOCK_PERIOD;
-        assert data_out = "0000111100001111000011110000111100001111000011110000111100001111" report "testbench failed for CoreRegisters BRAM case 4" severity error;
+        assert data_out = "0000111100001111000011110000111100001111000011110000111100001111" report "testbench failed for CoreRegisters BRAM case 3" severity error;
         data_addr <= "1111111111111111";
-        data_in <= "0000000011111111000000001111111100000000111111110000000011111111" report "testbench failed for BRAM case 5" severity error;
+        data_in <= "0000000011111111000000001111111100000000111111110000000011111111";
         wait for CLOCK_PERIOD;
-        assert data_out = "0000000011111111000000001111111100000000111111110000000011111111" report "testbench failed for CoreRegisters BRAM case 6" severity error;
+        assert data_out = "0000000011111111000000001111111100000000111111110000000011111111" report "testbench failed for CoreRegisters BRAM case 4" severity error;
         -- test that state is preserved across clock cycles
         w_data <= '0';
         data_in <= "0000000000000000000000000000000000000000000000000000000000000000";
         wait for 10 * CLOCK_PERIOD;
-        assert data_out = "0000000011111111000000001111111100000000111111110000000011111111" report "testbench failed for CoreRegisters BRAM case 7" severity error;
+        assert data_out = "0000000011111111000000001111111100000000111111110000000011111111" report "testbench failed for CoreRegisters BRAM case 5" severity error;
         data_addr <= "1111111111111110";
         wait for CLOCK_PERIOD;
-        assert data_out = "0000111100001111000011110000111100001111000011110000111100001111" report "testbench failed for CoreRegisters BRAM case 8" severity error;
+        assert data_out = "0000111100001111000011110000111100001111000011110000111100001111" report "testbench failed for CoreRegisters BRAM case 6" severity error;
         data_addr <= "0000000000000001";
         wait for CLOCK_PERIOD;
-        assert data_out = "0011001100110011001100110011001100110011001100110011001100110011" report "testbench failed for CoreRegisters BRAM case 9" severity error;
+        assert data_out = "0011001100110011001100110011001100110011001100110011001100110011" report "testbench failed for CoreRegisters BRAM case 7" severity error;
         data_addr <= "0000000000000000";
         wait for CLOCK_PERIOD;
-        assert data_out = "0101010101010101010101010101010101010101010101010101010101010101" report "testbench failed for CoreRegisters BRAM case 10" severity error;
+        assert data_out = "0101010101010101010101010101010101010101010101010101010101010101" report "testbench failed for CoreRegisters BRAM case 8" severity error;
+        -- test write instructions to and read instructions from registers
+        w_data <= '1';
+        data_addr <= "0000000000000101";
+        data_in <= "0101010101010101010101010101010101010101010101010101010101010101";
+        wait for CLOCK_PERIOD;
+        assert instr_out = "0101010101010101010101010101010101010101010101010101010101010101" report "testbench failed for CoreRegisters BRAM case 9" severity error;
+        instr_addr <= "0000000000000110";
+        data_in <= "0011001100110011001100110011001100110011001100110011001100110011";
+        wait for CLOCK_PERIOD;
+        assert instr_out = "0011001100110011001100110011001100110011001100110011001100110011" report "testbench failed for CoreRegisters BRAM case 10" severity error;
+        instr_addr <= "0000000000000111";
+        data_in <= "0000111100001111000011110000111100001111000011110000111100001111";
+        wait for CLOCK_PERIOD;
+        assert instr_out = "0000111100001111000011110000111100001111000011110000111100001111" report "testbench failed for CoreRegisters BRAM case 11" severity error;
+        instr_addr <= "0000000000001000";
+        data_in <= "0000000011111111000000001111111100000000111111110000000011111111";
+        wait for CLOCK_PERIOD;
+        assert instr_out = "0000000011111111000000001111111100000000111111110000000011111111" report "testbench failed for CoreRegisters BRAM case 12" severity error;
         -- test write enable
         w_data <= '1';
         wait for CLOCK_PERIOD;
-        assert data_out = "0000000000000000000000000000000000000000000000000000000000000000" report "testbench failed for CoreRegisters BRAM case 11" severity error;
+        assert data_out = "0000000000000000000000000000000000000000000000000000000000000000" report "testbench failed for CoreRegisters BRAM case 13" severity error;
         w_data <= '0';
-        -- test instruction reads and address separation
+        -- test address separation
         instr_addr <= "0000000000000000";
-        assert data_out = "0000000000000000000000000000000000000000000000000000000000000000" report "testbench failed for CoreRegisters BRAM case 12" severity error;
-        assert instr_out = "0101010101010101010101010101010101010101010101010101010101010101" report "testbench failed for CoreRegisters BRAM case 13" severity error;
-        instr_addr <= "0000000000000001";
         assert data_out = "0000000000000000000000000000000000000000000000000000000000000000" report "testbench failed for CoreRegisters BRAM case 14" severity error;
-        assert instr_out = "0011001100110011001100110011001100110011001100110011001100110011" report "testbench failed for CoreRegisters BRAM case 15" severity error;
-        instr_addr <= "1111111111111110";
+        assert instr_out = "0101010101010101010101010101010101010101010101010101010101010101" report "testbench failed for CoreRegisters BRAM case 15" severity error;
+        instr_addr <= "0000000000000001";
         assert data_out = "0000000000000000000000000000000000000000000000000000000000000000" report "testbench failed for CoreRegisters BRAM case 16" severity error;
-        assert instr_out = "0000111100001111000011110000111100001111000011110000111100001111" report "testbench failed for CoreRegisters BRAM case 17" severity error;
-        instr_addr <= "1111111111111111";
+        assert instr_out = "0011001100110011001100110011001100110011001100110011001100110011" report "testbench failed for CoreRegisters BRAM case 17" severity error;
+        instr_addr <= "1111111111111110";
         assert data_out = "0000000000000000000000000000000000000000000000000000000000000000" report "testbench failed for CoreRegisters BRAM case 18" severity error;
-        assert instr_out = "0000000011111111000000001111111100000000111111110000000011111111" report "testbench failed for CoreRegisters BRAM case 19" severity error;
+        assert instr_out = "0000111100001111000011110000111100001111000011110000111100001111" report "testbench failed for CoreRegisters BRAM case 19" severity error;
+        instr_addr <= "1111111111111111";
+        assert data_out = "0000000000000000000000000000000000000000000000000000000000000000" report "testbench failed for CoreRegisters BRAM case 20" severity error;
+        assert instr_out = "0000000011111111000000001111111100000000111111110000000011111111" report "testbench failed for CoreRegisters BRAM case 21" severity error;
         -- test simultaneous read instruction and write data
         w_data <= '1';
         data_addr <= "1011110101010111";
         data_in <= "0000000000000000000000000000000011111111111111111111111111111111";
-        wait for CLOCK_CYCLE;
+        wait for CLOCK_PERIOD;
         data_addr <= "1011110101011000";
         data_in <= "1111110000111111111111000011111111111100001111111111110000111111";
-        wait for CLOCK_CYCLE;
+        wait for CLOCK_PERIOD;
         w_data <= '0';
         data_addr <= "1011110101010111";
         instr_addr <= "1011110101011000";
-        assert data_out = "0000000000000000000000000000000011111111111111111111111111111111" report "testbench failed for CoreRegisters BRAM case 20" severity error;
-        assert instr_out = "1111110000111111111111000011111111111100001111111111110000111111" report "testbench failed for CoreRegisters BRAM case 21" severity error;
+        assert data_out = "0000000000000000000000000000000011111111111111111111111111111111" report "testbench failed for CoreRegisters BRAM case 22" severity error;
+        assert instr_out = "1111110000111111111111000011111111111100001111111111110000111111" report "testbench failed for CoreRegisters BRAM case 23" severity error;
         wait;
     end process;
 end BRAMTBLogic;
