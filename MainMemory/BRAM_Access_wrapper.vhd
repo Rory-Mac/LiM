@@ -7,13 +7,13 @@ library xil_defaultlib;
 use xil_defaultlib.ISAListings.all;
 entity BRAM_Access_wrapper is
     port (
-        clk : in STD_LOGIC;
-        opcode : in STD_LOGIC_VECTOR (0 to 6);
-        funct3 : in STD_LOGIC_VECTOR ( 0 to 2);
-        data_addr, instr_addr : in STD_LOGIC_VECTOR ( 15 downto 0 );
-        data_in, instr_in : in STD_LOGIC_VECTOR ( 63 downto 0 );
-        instr_out : out STD_LOGIC_VECTOR ( 63 downto 0 );
-        data_out : out signed (63 downto 0)
+        clk : in std_logic;
+        opcode : in std_logic_vector(0 to 6);
+        funct3 : in std_logic_vector(0 to 2);
+        data_addr, instr_addr : in std_logic_vector(15 downto 0);
+        data_in, instr_in : in std_logic_vector(63 downto 0);
+        instr_out : out std_logic_vector(63 downto 0);
+        data_out : out signed(63 downto 0)
     );
 end BRAM_Access_wrapper;
 
@@ -47,15 +47,15 @@ BRAM_Access_i: component BRAM_Access
         w_instr => w_instr
     );
     -- initialise load and store signals
-    load_byte_signal <= resize(signed(loaded_value(56 to 63)), 64);
-    load_byte_signal_u <= resize(unsigned(loaded_value(56 to 63)), 64);
-    store_byte_signal <= resize(signed(data_in(56 to 63)), 64);
-    load_halfword_signal <= resize(signed(loaded_value(48 to 63)), 64);
-    load_halfword_signal_u <= resize(unsigned(loaded_value(48 to 63)), 64);
-    store_halfword_signal <= resize(signed(data_in(48 to 63)), 64);
-    load_word_signal <= resize(signed(loaded_value(32 to 63)), 64);
-    load_word_signal_u <= resize(unsigned(loaded_value(32 to 63)), 64);
-    store_word_signal <= resize(signed(data_in(32 to 63)), 64);
+    load_byte_signal <= resize(signed(loaded_value(7 downto 0)), 64);
+    load_byte_signal_u <= resize(unsigned(loaded_value(7 downto 0)), 64);
+    store_byte_signal <= resize(signed(data_in(7 downto 0)), 64);
+    load_halfword_signal <= resize(signed(loaded_value(15 downto 0)), 64);
+    load_halfword_signal_u <= resize(unsigned(loaded_value(15 downto 0)), 64);
+    store_halfword_signal <= resize(signed(data_in(15 downto 0)), 64);
+    load_word_signal <= resize(signed(loaded_value(31 downto 0)), 64);
+    load_word_signal_u <= resize(unsigned(loaded_value(31 downto 0)), 64);
+    store_word_signal <= resize(signed(data_in(31 downto 0)), 64);
     load_double_signal <= signed(loaded_value);
     store_double_signal <= signed(data_in);
     -- route load and store signals

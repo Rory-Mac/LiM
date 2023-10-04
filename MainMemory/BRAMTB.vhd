@@ -49,63 +49,63 @@ begin
         data_in <= "1111111111111111111111111111111111111111111111111111111101010101";
         data_addr <= "0000100000000000";
         wait for CLOCK_PERIOD;
-        assert data_out = "0000000000000000000000000000000000000000000000000000000001010101" report "testbench failed for BRAM case 26" severity error;
+        assert data_out = "0000000000000000000000000000000000000000000000000000000001010101" report "testbench failed for BRAM case 1" severity error;
         data_in <= "0000000000000000000000000000000000000000000000000000000010101010";
         wait for CLOCK_PERIOD;
-        assert data_out = "1111111111111111111111111111111111111111111111111111111110101010" report "testbench failed for BRAM case 27" severity error;
+        assert data_out = "1111111111111111111111111111111111111111111111111111111110101010" report "testbench failed for BRAM case 2" severity error;
         -- load byte
         opcode <= LOAD;
         funct3 <= I_LB;
         wait for CLOCK_PERIOD;
-        assert load_value <= "1111111111111111111111111111111111111111111111111111111110101010";
+        assert data_out <= "1111111111111111111111111111111111111111111111111111111110101010";
         -- load byte unsigned
         funct3 <= I_LBU;
         wait for CLOCK_PERIOD;
-        assert load_value <= "0000000000000000000000000000000000000000000000000000000010101010";
+        assert data_out <= "0000000000000000000000000000000000000000000000000000000010101010";
         -- store halfword
         opcode <= STORE;
         funct3 <= S_SH;
         data_in <= "1111111111111111111111111111111111111111111111110101010101010101";
         data_addr <= "0000100000000001";
         wait for CLOCK_PERIOD;
-        assert data_out = "0000000000000000000000000000000000000000000000000101010101010101" report "testbench failed for BRAM case 28" severity error;
+        assert data_out = "0000000000000000000000000000000000000000000000000101010101010101" report "testbench failed for BRAM case 3" severity error;
         data_in <= "0000000000000000000000000000000000000000000000001010101010101010";
         wait for CLOCK_PERIOD;
-        assert data_out = "1111111111111111111111111111111111111111111111111010101010101010" report "testbench failed for BRAM case 29" severity error;
+        assert data_out = "1111111111111111111111111111111111111111111111111010101010101010" report "testbench failed for BRAM case 4" severity error;
         -- load halfword
         opcode <= LOAD;
         funct3 <= I_LH;
         wait for CLOCK_PERIOD;
-        assert load_value <= "1111111111111111111111111111111111111111111111111010101010101010";
+        assert data_out <= "1111111111111111111111111111111111111111111111111010101010101010";
         -- load halfword unsigned
         funct3 <= I_LHU;
         wait for CLOCK_PERIOD;
-        assert load_value <= "0000000000000000000000000000000000000000000000001010101010101010";
+        assert data_out <= "0000000000000000000000000000000000000000000000001010101010101010";
         -- store word
         opcode <= STORE;
         funct3 <= S_SW;
         data_in <= "1111111111111111111111111111111101010101010101010101010101010101";
         data_addr <= "0000100000000010";
         wait for CLOCK_PERIOD;
-        assert data_out = "0000000000000000000000000000000001010101010101010101010101010101" report "testbench failed for BRAM case 30" severity error;
+        assert data_out = "0000000000000000000000000000000001010101010101010101010101010101" report "testbench failed for BRAM case 5" severity error;
         data_in <= "0000000000000000000000000000000010101010101010101010101010101010";
         wait for CLOCK_PERIOD;
-        assert data_out = "1111111111111111111111111111111110101010101010101010101010101010" report "testbench failed for BRAM case 31" severity error;
+        assert data_out = "1111111111111111111111111111111110101010101010101010101010101010" report "testbench failed for BRAM case 6" severity error;
         -- load word
         opcode <= LOAD;
         funct3 <= I_LW;
         wait for CLOCK_PERIOD;
-        assert load_value <= "1111111111111111111111111111111110101010101010101010101010101010";
+        assert data_out <= "1111111111111111111111111111111110101010101010101010101010101010";
         -- load word unsigned
         funct3 <= I_LWU;
         wait for CLOCK_PERIOD;
-        assert load_value <= "0000000000000000000000000000000010101010101010101010101010101010";
+        assert data_out <= "0000000000000000000000000000000010101010101010101010101010101010";
         -- store double
         opcode <= STORE;
         funct3 <= S_SD;
         data_in <= "0101010101010101010101010101010101010101010101010101010101010101";
         data_addr <= "0000100000000011";
         wait for CLOCK_PERIOD;
-        assert data_out = "0101010101010101010101010101010101010101010101010101010101010101" report "testbench failed for BRAM case 32" severity error;
+        assert data_out = "0101010101010101010101010101010101010101010101010101010101010101" report "testbench failed for BRAM case 7" severity error;
     end process;
 end BRAMTBLogic;
