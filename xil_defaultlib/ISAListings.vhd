@@ -8,6 +8,9 @@ package ISAListings is
     constant OP_IMM_32 : std_logic_vector := "0011011";
     constant LOAD : std_logic_vector := "0000011";
     constant STORE : std_logic_vector := "0100011";
+    constant BRANCH : std_logic_vector := "1100011";
+    constant JAL : std_logic_vector := "1101111";
+    constant JALR : std_logic_vector := "1100111";
     -- funct3 bits for R-formatted instructions
     constant R_ADD : std_logic_vector := "000"; -- funct7 bits 0000000
     constant R_SUB : std_logic_vector := "000"; -- funct7 bits 0100000
@@ -47,4 +50,14 @@ package ISAListings is
     constant I_LD : std_logic_vector := "011";
     constant I_LWU : std_logic_vector := "110";
     constant S_SD : std_logic_vector := "011";
+    -- funct3 bits for B-formatted Branch instructions
+    constant B_BEQ : std_logic_vector := "000";
+    constant B_BNE : std_logic_vector := "001";
+    constant B_BLT : std_logic_vector := "100";
+    constant B_BGE : std_logic_vector := "101";
+    constant B_BLTU : std_logic_vector := "110";
+    constant B_BGEU : std_logic_vector := "111";
+    -- funct3 bits for Jump instructions
+    constant J_JAL : std_logic_vector := "000";
+    constant I_JALR : std_logic_vector := "000";
 end package;
