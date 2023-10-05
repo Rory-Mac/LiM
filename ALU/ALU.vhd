@@ -18,6 +18,7 @@ end entity;
 
 architecture ALULogic of ALU is
     signal register_ADD, register_SUB, register_XOR, register_OR, register_AND, register_SLL, register_SRL, register_SRA : signed(0 to 63);
+    signal register_ADDW, register_SUBW, register_SLLW, register_SRLW, register_SRAW : signed(0 to 63);
     signal imm_zero_promoted, imm_msb_promoted, imm_ADD, imm_XOR, imm_OR, imm_AND, imm_SLL, imm_SRL, imm_SRA : signed(0 to 63);
     signal imm_ADDIW, imm_SLLIW, imm_SRLIW, imm_SRAIW : signed(0 to 63);
 begin
@@ -30,6 +31,11 @@ begin
     register_SLL <= shift_left(rs1, to_integer(unsigned(rs2(58 to 63))));
     register_SRL <= signed(shift_right(unsigned(rs1), to_integer(unsigned(rs2(58 to 63)))));
     register_SRA <= shift_right(rs1, to_integer(unsigned(rs2(58 to 63))));
+    register_ADDW <= resize(register_ADD(32 to 63), 64);
+    register_SUBW <= resize(register_SUB(32 to 63), 64);
+    register_SLLW <= resize(register_SLL(32 to 63), 64);
+    register_SRLW <= resize(register_SRL(32 to 63), 64);
+    register_SRAW <= resize(register_SRA(32 to 63), 64);
     -- create register-immediate signals
     imm_zero_promoted <= signed(resize(unsigned(imm), 64));
     imm_msb_promoted <= resize(imm, 64);
@@ -45,13 +51,13 @@ begin
     imm_SLLIW <= resize(signed(imm_SLL(32 to 63)), 64);
     imm_SRLIW <= resize(signed(imm_SRL(32 to 63)), 64);
     imm_SRAIW <= resize(signed(imm_SRA(32 to 63)), 64);
-    -- process R-formatted register-register arithmetic instructions
     process (rs1, rs2, imm, opcode, funct3, funct7,
         register_ADD, imm_ADD, imm_zero_promoted, imm_msb_promoted, imm_ADDIW, register_ADD, register_SUB,
         register_XOR, register_OR, register_AND, register_SLL, register_SRL, register_SRA, imm_zero_promoted,
         imm_msb_promoted, imm_ADD, imm_XOR, imm_OR, imm_AND, imm_SLL, imm_SRL, imm_SRA, imm_ADDIW, imm_SLLIW, 
         imm_SRLIW, imm_SRAIW) is
     begin
+        -- process R-formatted register-register arithmetic instructions
         if opcode = OP then
             case funct3 is
                 when R_ADD =>
@@ -84,6 +90,24 @@ begin
                     end if;
                 when others =>
                     null;
+            end case;
+        -- process R-formatted register-register arithmetic instructions (R64I extensions)
+        elsif opcode = OP_32 then
+            case funct3 is 
+                when R_ADDW => 
+                    if funct7 = "0000000" then
+                        rd <= register_ADDW;
+                    elsif funct7 = "0100000" then
+                        rd <= register_SUBW;
+                    end if;
+                when R_SLLW => rd <= register_SLLW;
+                when R_SRLW =>
+                    if funct7 = "0000000" then
+                        rd <= register_SRLW;
+                    elsif funct7 = "0100000" then
+                        rd <= register_SRAW;
+                    end if; 
+                when others => null;
             end case;
         -- process I-formatted register-immediate arithmetic instructions
         elsif opcode = OP_IMM then

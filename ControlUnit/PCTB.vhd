@@ -16,8 +16,10 @@ architecture PCTBLogic of PCTB is
     signal funct3 : std_logic_vector(0 to 2);
     signal d_in, d_out : unsigned(0 to 63);
     signal rs1, rs2 : signed(0 to 63);
+    signal imm : signed(0 to 11);
 begin
-    PCInstance : entity work.PC port map (clk => clk, opcode => opcode, funct3 => funct3, rs1 => rs1, rs2 => rs2, d_in => d_in, d_out => d_out);
+    PCInstance : entity work.PC port map (
+        clk => clk, opcode => opcode, funct3 => funct3, imm => imm, rs1 => rs1, rs2 => rs2, d_in => d_in, d_out => d_out);
     ClockProcess : process
     begin
         while now < SIMULATION_LENGTH loop
@@ -35,6 +37,7 @@ begin
         opcode <= OP;
         rs1 <= "1001001010001000001010110101110101010010101111101000010101010111";
         rs2 <= "1001001010001000001010110101110101010010101111101000010101010111";
+        wait for CLOCK_PERIOD;
         assert d_out <= "0000000000000000000000000000000000000000000000000000000000000000" report "testbench failed for program counter case 1";
         opcode <= OP_IMM_32;
         wait for CLOCK_PERIOD;
@@ -47,59 +50,78 @@ begin
         funct3 <= B_BEQ;
         rs1 <= "0000000000000000000000000000000000000000000000000000000000000000";
         rs2 <= "0000000000000000000000000000000000000000000000000000000000000000";
-        d_in <= "010101001010100101010010101001010100101010010101001010101001011";
+        d_in <= "0010101001010100101010010101001010100101010010101001010101001011";
         wait for CLOCK_PERIOD;
-        assert d_out <= "010101001010100101010010101001010100101010010101001010101001011" report "testbench failed for program counter case 4";
+        assert d_out <= "0010101001010100101010010101001010100101010010101001010101001011" report "testbench failed for program counter case 4";
         rs2 <= "1111111111111111111111111111111111111111111111111111111111111111";
         wait for CLOCK_PERIOD;
-        assert d_out <= "010101001010100101010010101001010100101010010101001010101001100" report "testbench failed for program counter case 5";
+        assert d_out <= "0010101001010100101010010101001010100101010010101001010101001100" report "testbench failed for program counter case 5";
         -- test conditional branch if not equal
         opcode <= BRANCH;
         funct3 <= B_BNE;
         rs1 <= "0000000000000000000000000000000000000000000000000000000000000000";
         rs2 <= "1111111111111111111111111111111111111111111111111111111111111111";
-        d_in <= "010101001010100101010010101001010100101010010101001010101001011";
+        d_in <= "0010101001010100101010010101001010100101010010101001010101001011";
         wait for CLOCK_PERIOD;
-        assert d_out <= "010101001010100101010010101001010100101010010101001010101001011" report "testbench failed for program counter case 6";
+        assert d_out <= "0010101001010100101010010101001010100101010010101001010101001011" report "testbench failed for program counter case 6";
         rs2 <= "0000000000000000000000000000000000000000000000000000000000000000";
         wait for CLOCK_PERIOD;
-        assert d_out <= "010101001010100101010010101001010100101010010101001010101001100" report "testbench failed for program counter case 7";
+        assert d_out <= "0010101001010100101010010101001010100101010010101001010101001100" report "testbench failed for program counter case 7";
         -- test conditional branch if less than, signed and unsigned
         opcode <= BRANCH;
         funct3 <= B_BLTU;
         rs1 <= "0000000000000000000000000000000000000000000000000000000000000000";
         rs2 <= "1111111111111111111111111111111111111111111111111111111111111111";
-        d_in <= "010101001010100101010010101001010100101010010101001010101001011";
+        d_in <= "0010101001010100101010010101001010100101010010101001010101001011";
         wait for CLOCK_PERIOD;
-        assert d_out <= "010101001010100101010010101001010100101010010101001010101001011" report "testbench failed for program counter case 8";
+        assert d_out <= "0010101001010100101010010101001010100101010010101001010101001011" report "testbench failed for program counter case 8";
         funct3 <= B_BLT;
         wait for CLOCK_PERIOD;
-        assert d_out <= "010101001010100101010010101001010100101010010101001010101001100" report "testbench failed for program counter case 9";
+        assert d_out <= "0010101001010100101010010101001010100101010010101001010101001100" report "testbench failed for program counter case 9";
         rs2 <= "0111111111111111111111111111111111111111111111111111111111111111";
         wait for CLOCK_PERIOD;
-        assert d_out <= "010101001010100101010010101001010100101010010101001010101001011" report "testbench failed for program counter case 10";
+        assert d_out <= "0010101001010100101010010101001010100101010010101001010101001011" report "testbench failed for program counter case 10";
         funct3 <= B_BLTU;
         rs1 <= "1000000000000000000000000000000000000000000000000000000000000000";
         wait for CLOCK_PERIOD;
-        assert d_out <= "010101001010100101010010101001010100101010010101001010101001100" report "testbench failed for program counter case 11";
+        assert d_out <= "0010101001010100101010010101001010100101010010101001010101001100" report "testbench failed for program counter case 11";
         -- test conditional branch if greater than or equal to, signed and unsigned
         opcode <= BRANCH;
         funct3 <= B_BGEU;
         rs1 <= "1111111111111111111111111111111111111111111111111111111111111111";
         rs2 <= "0000000000000000000000000000000000000000000000000000000000000000";
-        d_in <= "010101001010100101010010101001010100101010010101001010101001011";
+        d_in <= "0010101001010100101010010101001010100101010010101001010101001011";
         wait for CLOCK_PERIOD;
-        assert d_out <= "010101001010100101010010101001010100101010010101001010101001011" report "testbench failed for program counter case 12";
+        assert d_out <= "0010101001010100101010010101001010100101010010101001010101001011" report "testbench failed for program counter case 12";
         funct3 <= B_BGEU;
         wait for CLOCK_PERIOD;
-        assert d_out <= "010101001010100101010010101001010100101010010101001010101001100" report "testbench failed for program counter case 13";
+        assert d_out <= "0010101001010100101010010101001010100101010010101001010101001100" report "testbench failed for program counter case 13";
         rs1 <= "0111111111111111111111111111111111111111111111111111111111111111";
         wait for CLOCK_PERIOD;
-        assert d_out <= "010101001010100101010010101001010100101010010101001010101001011" report "testbench failed for program counter case 14";
+        assert d_out <= "0010101001010100101010010101001010100101010010101001010101001011" report "testbench failed for program counter case 14";
         funct3 <= B_BGEU;
         rs2 <= "1000000000000000000000000000000000000000000000000000000000000000";
         wait for CLOCK_PERIOD;
-        assert d_out <= "010101001010100101010010101001010100101010010101001010101001100" report "testbench failed for program counter case 15";
+        assert d_out <= "0010101001010100101010010101001010100101010010101001010101001100" report "testbench failed for program counter case 15";
+        -- test jal
+        opcode <= BRANCH;
+        funct3 <= B_BEQ;
+        rs1 <= "0000000000000000000000000000000000000000000000000000000000000001";
+        rs2 <= "0000000000000000000000000000000000000000000000000000000000000001";
+        d_in <= "0000000000000000000000000000000000000000000000000000000000000000";
+        wait for CLOCK_PERIOD;
+        opcode <= JAL;
+        imm <= "0000000000001010";
+        wait for CLOCK_PERIOD;
+        assert d_out <= "0000000000000000000000000000000000000000000000000000000000001010" report "testbench failed for program counter case 16";
+        assert rd <= "0000000000000000000000000000000000000000000000000000000000000001" report "testbench failed for program counter case 17";
+        -- test jalr
+        opcode <= JALR;
+        rs1 <= "1111000000000000000000000000000000000000000000000000000000000000";
+        imm <= "0000000000001010";
+        wait for CLOCK_PERIOD;
+        assert d_out <= "1111000000000000000000000000000000000000000000000000000000001010";
+        assert rd <= "0000000000000000000000000000000000000000000000000000000000001011" report "testbench failed for program counter case 18";
+        wait;
     end process;
-
 end architecture;

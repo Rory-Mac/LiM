@@ -10,12 +10,14 @@ port (clk : in std_logic;
     opcode : in std_logic_vector(0 to 6);
     funct3 : in std_logic_vector(0 to 2);
     rs1, rs2 : in signed(0 to 63);
+    rd : out unsigned(0 to 63);
+    imm : in signed(0 to 11);
     d_in : in unsigned(0 to 63);
     d_out : out unsigned(0 to 63));
 end PC;
 
 architecture PClogic of PC is
-signal pc_value : unsigned(0 to 63) := (others => '0');
+signal pc_value : unsigned(0 to 63) := (others => '1');
 signal next_value : unsigned(0 to 63) := (others => '0');
 signal beq_signal, bne_signal, blt_signal, bge_signal, bltu_signal, bgeu_signal : std_logic_vector(0 to 63) := (others => '0');
 begin
@@ -33,6 +35,12 @@ begin
                 else
                     pc_value <= pc_value + 1;
                 end if;
+            elsif opcode = JAL then
+                rd <= pc_value + 1;
+                pc_value <= d_in + unsigned(resize(imm, 64));
+            elsif opcode = JALR then
+                rd <= pc_value + 1;
+                pc_value <= unsigned(rs1 + resize(imm, 64));
             else
                 pc_value <= pc_value + 1;
             end if;

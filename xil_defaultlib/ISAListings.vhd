@@ -4,6 +4,7 @@ use ieee.std_logic_1164.all;
 package ISAListings is
     -- opcode definitions
     constant OP : std_logic_vector := "0110011";
+    constant OP_32 : std_logic_vector := "0111011";
     constant OP_IMM : std_logic_vector := "0010011";
     constant OP_IMM_32 : std_logic_vector := "0011011";
     constant LOAD : std_logic_vector := "0000011";
@@ -22,6 +23,12 @@ package ISAListings is
     constant R_SRA : std_logic_vector := "101"; -- funct7 bits 010000i
     constant R_SLT : std_logic_vector := "010";
     constant R_SLTU : std_logic_vector := "011";
+    -- funct3 bits for R-formatted 64-bit arithmetic extensions
+    constant R_ADDW : std_logic_vector := "000"; -- funct7 bits 0000000
+    constant R_SUBW : std_logic_vector := "000"; -- funct7 bits 0100000
+    constant R_SLLW : std_logic_vector := "001";
+    constant R_SRLW : std_logic_vector := "101"; -- funct7 bits 0000000
+    constant R_SRAW : std_logic_vector := "101"; -- funct7 bits 0100000
     -- funct3 bits for I-formatted arithmetic instructions
     constant I_ADD : std_logic_vector := "000";
     constant I_XOR : std_logic_vector := "100";
