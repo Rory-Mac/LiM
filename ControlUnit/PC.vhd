@@ -10,18 +10,24 @@ port (clk : in std_logic;
     opcode : in std_logic_vector(0 to 6);
     funct3 : in std_logic_vector(0 to 2);
     rs1, rs2 : in signed(0 to 63);
-    rd : out unsigned(0 to 63);
+    rd : out signed(0 to 63);
     imm : in signed(0 to 11);
-    d_in : in unsigned(0 to 63);
-    d_out : out unsigned(0 to 63));
+    upper_imm : in signed(0 to 19);
+    d_in : in unsigned(0 to 15);
+    d_out : out unsigned(0 to 15));
 end PC;
 
 architecture PClogic of PC is
-signal pc_value : unsigned(0 to 63) := (others => '1');
+signal pc_value : unsigned(0 to 15) := (others => '1');
 signal next_value : unsigned(0 to 63) := (others => '0');
 signal beq_signal, bne_signal, blt_signal, bge_signal, bltu_signal, bgeu_signal : std_logic_vector(0 to 63) := (others => '0');
+signal auipc_signal : signed(0 to 31);
+signal jalr_signal : unsigned(0 to 63);
 begin
-    process (clk)
+    auipc_signal <= upper_imm & "000000000000";
+    jalr_signal <= unsigned(rs1 + resize(imm, 64));
+    d_out <= pc_value;
+    process (clk, pc_value, next_value, beq_signal, bne_signal, blt_signal, bge_signal, bltu_signal, bgeu_signal, auipc_signal, jalr_signal)
     begin
         if rising_edge(clk) then
             if opcode = BRANCH then
@@ -36,15 +42,16 @@ begin
                     pc_value <= pc_value + 1;
                 end if;
             elsif opcode = JAL then
-                rd <= pc_value + 1;
-                pc_value <= d_in + unsigned(resize(imm, 64));
+                rd <= resize(signed(pc_value + 1), 64);
+                pc_value <= pc_value + unsigned(resize(imm, 16));
             elsif opcode = JALR then
-                rd <= pc_value + 1;
-                pc_value <= unsigned(rs1 + resize(imm, 64));
+                rd <= resize(signed(pc_value + 1), 64);
+                pc_value <= jalr_signal(48 to 63);
+            elsif opcode = AUIPC then
+                pc_value <= pc_value + unsigned(auipc_signal(16 to 31));
             else
                 pc_value <= pc_value + 1;
             end if;
         end if;
     end process;
-    d_out <= pc_value;
 end architecture;
