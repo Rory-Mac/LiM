@@ -112,24 +112,24 @@ begin
         -- process I-formatted register-immediate arithmetic instructions
         elsif opcode = OP_IMM then
             case funct3 is
-                when I_ADD => rd <= imm_ADD;
-                when I_XOR => rd <= imm_XOR;
-                when I_OR => rd <= imm_OR;
-                when I_AND => rd <= imm_AND;
-                when I_SLL => rd <= imm_SLL;
-                when I_SRL =>
+                when I_ADDI => rd <= imm_ADD;
+                when I_XORI => rd <= imm_XOR;
+                when I_ORI => rd <= imm_OR;
+                when I_ANDI => rd <= imm_AND;
+                when I_SLLI => rd <= imm_SLL;
+                when I_SRLI =>
                     if funct7(1) = '0' then
                         rd <= imm_SRL;
                     elsif funct7(1) = '1' then
                         rd <= imm_SRA;
                     end if;
-                when I_SLT =>
+                when I_SLTI =>
                     if rs1 <= imm_msb_promoted then
                         rd <= (63 => '1', others => '0');
                     else
                         rd <= (others => '0');
                     end if;
-                when I_SLTU =>
+                when I_SLTIU =>
                     if unsigned(rs1) <= unsigned(imm_zero_promoted) then
                         rd <= (63 => '1', others => '0');
                     else

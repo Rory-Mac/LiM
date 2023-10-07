@@ -13,7 +13,6 @@ port (clk : in std_logic;
     rd : out signed(0 to 63);
     imm : in signed(0 to 11);
     upper_imm : in signed(0 to 19);
-    d_in : in unsigned(0 to 15);
     d_out : out unsigned(0 to 15));
 end PC;
 
@@ -24,7 +23,7 @@ signal beq_signal, bne_signal, blt_signal, bge_signal, bltu_signal, bgeu_signal 
 signal auipc_signal : signed(0 to 31);
 signal jalr_signal : unsigned(0 to 63);
 begin
-    auipc_signal <= upper_imm & "000000000000";
+    auipc_signal <= "000000000000" & upper_imm;
     jalr_signal <= unsigned(rs1 + resize(imm, 64));
     d_out <= pc_value;
     process (clk, pc_value, next_value, beq_signal, bne_signal, blt_signal, bge_signal, bltu_signal, bgeu_signal, auipc_signal, jalr_signal)
@@ -37,13 +36,13 @@ begin
                 (funct3 = B_BGE and rs1 >= rs2) or
                 (funct3 = B_BLTU and unsigned(rs1) < unsigned(rs2)) or
                 (funct3 = B_BGEU and unsigned(rs1) >= unsigned(rs2)) then
-                    pc_value <= d_in;
+                    pc_value <= pc_value + unsigned(resize(imm, 16));
                 else
                     pc_value <= pc_value + 1;
                 end if;
             elsif opcode = JAL then
                 rd <= resize(signed(pc_value + 1), 64);
-                pc_value <= pc_value + unsigned(resize(imm, 16));
+                pc_value <= pc_value + unsigned(upper_imm(4 to 19));
             elsif opcode = JALR then
                 rd <= resize(signed(pc_value + 1), 64);
                 pc_value <= jalr_signal(48 to 63);

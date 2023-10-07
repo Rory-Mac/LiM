@@ -33,15 +33,15 @@ package ISAListings is
     constant R_SRLW : std_logic_vector := "101"; -- funct7 bits 0000000
     constant R_SRAW : std_logic_vector := "101"; -- funct7 bits 0100000
     -- funct3 bits for I-formatted arithmetic instructions
-    constant I_ADD : std_logic_vector := "000";
-    constant I_XOR : std_logic_vector := "100";
-    constant I_OR : std_logic_vector := "110";
-    constant I_AND : std_logic_vector := "111";
-    constant I_SLL : std_logic_vector := "001";
-    constant I_SRL : std_logic_vector := "101"; -- funct7 bits 010000i
-    constant I_SRA : std_logic_vector := "101"; -- funct7 bits 010000i
-    constant I_SLT : std_logic_vector := "010";
-    constant I_SLTU : std_logic_vector := "011";
+    constant I_ADDI : std_logic_vector := "000";
+    constant I_XORI : std_logic_vector := "100";
+    constant I_ORI : std_logic_vector := "110";
+    constant I_ANDI : std_logic_vector := "111";
+    constant I_SLLI : std_logic_vector := "001";
+    constant I_SRLI : std_logic_vector := "101"; -- funct7 bits 010000i
+    constant I_SRAI : std_logic_vector := "101"; -- funct7 bits 010000i
+    constant I_SLTI : std_logic_vector := "010";
+    constant I_SLTIU : std_logic_vector := "011";
     -- funct3 bits for I-formatted 64-bit arithmetic extensions
     constant I_ADDIW : std_logic_vector := "000";
     constant I_SLLIW : std_logic_vector := "001";
