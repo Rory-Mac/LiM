@@ -10,7 +10,7 @@ LOAD_operator = r"LB\|LH\|LW\|LBU\|LHU\|LD\|LWU" # I-formatted
 STORE_operator = r"SB\|SH\|SW\|SD" # S-formatted
 core_register = r"(zero\|ra\|sp\|gp\|tp\|t[0-6]\|fp\|s[0-11]\|a[0-7])"
 symbol_expression = r"[a-zA-Z0-9_]+"
-multiline_pseudoinstruction = r"^\s*(ret\|call\|tail\|la\|(l[bhwd]\s+" + core_register + r",\s+[a-zA-Z0-9_]{3,}))\s*$"
+multiline_pseudoinstruction = r"^\s*(ret\|call\|tail\|la\|li\|(l[bhwd]\s+" + core_register + r",\s+[a-zA-Z0-9_]{3,}))\s*$"
 
 core_register_map = {
     "zero" : "00000",
@@ -86,31 +86,148 @@ with open(os.getcwd() + "/Assembler/" + sys.argv[1][-2] + "_1.temp", 'r') as rea
                 symbol = instruction_words[2]
                 upper_twenty_bits = str(bin(int(symbol)))[0:19]
                 lower_twelve_bits = str(bin(int(symbol)))[20:31]
-                write_file.write("auipc " + destination_register + " " + upper_twenty_bits + "\n")
-                write_file.write("addi " + destination_register + " " + destination_register + " " + lower_twelve_bits + "\n")
-            elif instruction_words[0] == "lb":
-                
+                write_file.write(f"auipc {destination_register} {upper_twenty_bits}\n")
+                write_file.write(f"addi {destination_register} {lower_twelve_bits}({destination_register})\n")
+            elif instruction_words[0] in ["lb", "lh", "lw", "ld"]:
+                operator = instruction_words[0]
+                destination_register = instruction_words[1]
+                symbol = instruction_words[2]
+                upper_twenty_bits = str(bin(int(symbol)))[0:19]
+                lower_twelve_bits = str(bin(int(symbol)))[20:31]
+                write_file.write(f"auipc {destination_register} {upper_twenty_bits}\n")
+                write_file.write(f"{operator} {destination_register} {lower_twelve_bits}({destination_register})\n")
+            elif instruction_words[0] in ["sb", "sh", "sw", "sd"]:
+                operator = instruction_words[0]
+                destination_register = instruction_words[1]
+                symbol = instruction_words[2]
+                address_register = instruction_words[3]
+                upper_twenty_bits = str(bin(int(symbol)))[0:19]
+                lower_twelve_bits = str(bin(int(symbol)))[20:31]
+                write_file.write(f"auipc {address_register} {upper_twenty_bits}\n")
+                write_file.write(f"{operator} {destination_register} {lower_twelve_bits}({address_register})\n")
+            elif instruction_words[0] == "nop":
+                write_file.write(f"addi zero, zero, 0\n")
+            elif instruction_words[0] == "li":
+                destination_register = instruction_words[1]
+                immediate = instruction_words[2]
+                upper_twenty_bits = str(bin(int(immediate)))[0:19]
+                lower_twelve_bits = str(bin(int(immediate)))[20:31]
+                write_file.write(f"lui {destination_register} {upper_twenty_bits}\n")
+                write_file.write(f"addi {destination_register} {destination_register} {lower_twelve_bits}\n")
+            elif instruction_words[0] == "mv":
+                destination_register = instruction_words[1]
+                source_register = instruction_words[2]
+                write_file.write(f"addi {destination_register} {source_register} 0\n")
+            elif instruction_words[0] == "not":
+                destination_register = instruction_words[1]
+                source_register = instruction_words[2]
+                write_file.write(f"xori {destination_register} {source_register} -1\n")
+            elif instruction_words[0] == "neg":
+                destination_register = instruction_words[1]
+                source_register = instruction_words[2]
+                write_file.write(f"sub {destination_register} zero {source_register}\n")
+            elif instruction_words[0] == "negw":
+                destination_register = instruction_words[1]
+                source_register = instruction_words[2]
+                write_file.write(f"subw {destination_register} zero {source_register}\n")
+            elif instruction_words[0] == "sext.w":
+                destination_register = instruction_words[1]
+                source_register = instruction_words[2]
+                write_file.write(f"addiw {destination_register} {source_register} zero\n")
+            elif instruction_words[0] == "seqz":
+                destination_register = instruction_words[1]
+                source_register = instruction_words[2]
+                write_file.write(f"sltiu {destination_register} {source_register} 1\n")
+            elif instruction_words[0] == "snez":
+                destination_register = instruction_words[1]
+                source_register = instruction_words[2]
+                write_file.write(f"sltu {destination_register} zero {source_register}\n")
+            elif instruction_words[0] == "sltz":
+                destination_register = instruction_words[1]
+                source_register = instruction_words[2]
+                write_file.write(f"slt {destination_register} {source_register} zero\n")
+            elif instruction_words[0] == "sgtz":
+                destination_register = instruction_words[1]
+                source_register = instruction_words[2]
+                write_file.write(f"slt {destination_register} zero {source_register}\n")
+            elif instruction_words[0] == "beqz":
+                source_register = instruction_words[1]
+                offset = instruction_words[2]
+                write_file.write(f"beq {source_register} zero {offset}\n")
+            elif instruction_words[0] == "bnez":
+                source_register = instruction_words[1]
+                offset = instruction_words[2]
+                write_file.write(f"bne {source_register} zero {offset}\n")
+            elif instruction_words[0] == "blez":
+                source_register = instruction_words[1]
+                offset = instruction_words[2]
+                write_file.write(f"bge zero {source_register} {offset}\n")
+            elif instruction_words[0] == "bgez":
+                source_register = instruction_words[1]
+                offset = instruction_words[2]
+                write_file.write(f"bge {source_register} zero {offset}\n")
+            elif instruction_words[0] == "bltz":
+                source_register = instruction_words[1]
+                offset = instruction_words[2]
+                write_file.write(f"blt {source_register} zero {offset}\n")
+            elif instruction_words[0] == "bgtz":
+                source_register = instruction_words[1]
+                offset = instruction_words[2]
+                write_file.write(f"blt zero {source_register} {offset}\n")
+            elif instruction_words[0] == "bgt":
+                source_register1 = instruction_words[1]
+                source_register2 = instruction_words[2]
+                offset = instruction_words[3]
+                write_file.write(f"blt {source_register2} {source_register1} {offset}\n")
+            elif instruction_words[0] == "ble":
+                source_register1 = instruction_words[1]
+                source_register2 = instruction_words[2]
+                offset = instruction_words[3]
+                write_file.write(f"bge {source_register2} {source_register1} {offset}\n")
+            elif instruction_words[0] == "bgtu":
+                source_register1 = instruction_words[1]
+                source_register2 = instruction_words[2]
+                offset = instruction_words[3]
+                write_file.write(f"bltu {source_register2} {source_register1} {offset}\n")
+            elif instruction_words[0] == "bleu":
+                source_register1 = instruction_words[1]
+                source_register2 = instruction_words[2]
+                offset = instruction_words[3]
+                write_file.write(f"bgeu {source_register2} {source_register1} {offset}\n")
+            elif instruction_words[0] == "j":
+                offset = instruction_words[1]
+                write_file.write(f"jal zero {offset}\n")
+            elif instruction_words[0] == "jal":
+                offset = instruction_words[1]
+                write_file.write(f"jal ra {offset}\n")
+            elif instruction_words[0] == "jr":
+                source_register = instruction_words[1]
+                write_file.write(f"jalr zero {source_register} 0\n")
+            elif instruction_words[0] == "jalr":
+                source_register = instruction_words[1]
+                write_file.write(f"jalr ra {source_register} 0\n")
+            elif instruction_words[0] == "ret":
+                write_file.write("jalr zero ra 0\n")
+            elif instruction_words[0] == "call":
+                offset = instruction_words[1]
+                upper_twenty_bits = str(bin(int(offset)))[0:19]
+                lower_twelve_bits = str(bin(int(offset)))[20:31]
+                write_file.write(f"auipc t0 {upper_twenty_bits}\n")
+                write_file.write(f"jalr ra t0 {lower_twelve_bits}\n")
+            elif instruction_words[0] == "tail":
+                offset = instruction_words[1]
+                upper_twenty_bits = str(bin(int(offset)))[0:19]
+                lower_twelve_bits = str(bin(int(offset)))[20:31]
+                write_file.write(f"auipc t0 {upper_twenty_bits}\n")
+                write_file.write(f"jalr zero t0 {lower_twelve_bits}\n")
+            elif instruction_words[0] == "tail":
+                offset = instruction_words[1]
+                upper_twenty_bits = str(bin(int(offset)))[0:19]
+                lower_twelve_bits = str(bin(int(offset)))[20:31]
+                write_file.write(f"auipc t0 {upper_twenty_bits}\n")
+                write_file.write(f"jalr zero t0 {lower_twelve_bits}\n")
 
 
 
-# second passover: decompose pseudo-instructions and remove comments
-with open(os.getcwd() + "/Assembler/" + sys.argv[1], 'r') as read_file:
-    with open(os.getcwd() + "/Assembler/" + sys.argv[1][-2] + "_1.temp", 'w') as write_file:
-        for line in read_file:
-            instruction = remove_comments(line)
-            if instruction != "": continue
-            # decompose pseudoinstructions
-            instruction_match = re.match(r"^\s*la\s*" + core_register + symbol_expression, instruction)
-            if instruction_match != None:
-                instruction_words = re.split(r"\s+", instruction_match)
-                rd = instruction_words[1]
-                symbol = instruction_match[2]
-                write_file.write("auipc " + rd + ", " + symbol + "\n")
-                write_file.write("addi " + rd + ", " + rd + ", " + symbol + "\n")
 
-
-
-
-
-
-# third passover: assemble into binary instructions
+# third passover: binary translation
