@@ -4,7 +4,7 @@ LiM-Virtual-Platform is a project I undertook in the attempt to familiarise myse
 The project involved writing and synthesising a RISC-V compliant architecture (R64I) to an FPGA development board using vhdl, and creating an accompanying 
 assembler written in python. The project can be used as reference material to any hobbyist wanting to build their own virtual machine from scratch.  
 The base project has plenty of room for extension:  
-- Control and Status Register Instructions, Interrupts
+- Control and Status Register Instructions, Interrupts, Ethernet IO for video graphics and keypresses
 - RiSC-V "M" Standard Extension for Integer Multiplication and Division (evolve design to that of multi-cycle or pipelined processor)
 - RiSC-V "F"/"D" Standard Extension for Single-Precision/Double-Precision Floating-Point
 - Ethernet MMIO and network stack

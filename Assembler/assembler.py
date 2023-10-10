@@ -48,9 +48,6 @@ core_register_map = {
     "t6" : "11111",
 }
 
-def remove_comments(line):
-    return re.sub(r"((--)\|#).*", "", line)
-
 # first passover: symbol to address translation + comment removal
 with open(os.getcwd() + "/Assembler/" + sys.argv[1], 'r') as read_file:
     with open(os.getcwd() + "/Assembler/" + sys.argv[1][-2] + "_1.temp", 'w') as write_file:
@@ -58,7 +55,7 @@ with open(os.getcwd() + "/Assembler/" + sys.argv[1], 'r') as read_file:
         symbol_map = {} # symbol-address map
         for line in read_file:
             if instruction == "": continue
-            instruction = re.sub(r"^\s+\|\s+$\|,", r"", re.sub(r"\s+", " ", remove_comments(line))) # remove leading/trailing/excess whitespace + commas
+            instruction = re.sub(r"^\s+\|\s+$\|,", r"", re.sub(r"\s+", " ", re.sub(r"((--)\|#).*", "", line))) # remove commas + leading/trailing/excess whitespace
             # manage function declarations
             instruction_words = re.match(symbol + ":")
             if instruction_words:
@@ -227,7 +224,11 @@ with open(os.getcwd() + "/Assembler/" + sys.argv[1][-2] + "_1.temp", 'r') as rea
                 write_file.write(f"auipc t0 {upper_twenty_bits}\n")
                 write_file.write(f"jalr zero t0 {lower_twelve_bits}\n")
 
-
-
-
 # third passover: binary translation
+with open(os.getcwd() + "/Assembler/" + sys.argv[1][-2] + "_2.temp", 'r') as read_file:
+    with open(os.getcwd() + "/Assembler/" + sys.argv[1][-2] + ".coe", 'w') as write_file:
+        write_file.write("memory_initialization_radix=2;\n")
+        write_file.write("memory_initialization_vector=\n")
+        # binary instructions end in comma, last instruction ends in semi-colon
+        for line in read_file:
+            pass
