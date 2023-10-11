@@ -12,15 +12,19 @@ architecture ALUTBLogic of ALUTB is
     signal opcode : std_logic_vector(0 to 6);
     signal funct3 : std_logic_vector(0 to 2);
     signal funct7 : std_logic_vector(0 to 6);
+    signal eq, lt, ltu : std_logic;
 begin
     ALUInstance : entity work.ALU port map (
+        opcode => opcode,
+        funct3 => funct3,
+        funct7 => funct7,
+        imm => imm,
         rs1 => rs1,
         rs2 => rs2,
         rd => rd,
-        imm => imm,
-        opcode => opcode,
-        funct3 => funct3,
-        funct7 => funct7
+        eq => eq,
+        lt => lt,
+        ltu => ltu
     );
 
     ALUTestBench : process
@@ -292,6 +296,27 @@ begin
         funct7 <= "0100000";
         wait for PROPAGATION_DELAY;
         assert rd = "1111111111111111111111111111111110011101011110101011010010001000" report "testbench failed for ALU I-format sraiw" severity error;
+        ----------------------------------------------------------------------------------------------------------------------------------------------
+        -- test status signals
+        ----------------------------------------------------------------------------------------------------------------------------------------------
+        rs1 <= "1011000000000000000000000000000000000000000000000000000000001101";
+        rs2 <= "1011000000000000000000000000000000000000000000000000000000001101";
+        wait for PROPAGATION_DELAY;
+        assert eq = '1' report "testbench failed for ALU eq status signal (1)" severity error;
+        assert lt = '0' report "testbench failed for ALU lt status signal (1)" severity error;
+        assert ltu = '0' report "testbench failed for ALU ltu status signal (1)" severity error;
+        rs1 <= "1000000000000000000000000000000000000000000000000000000000000000";
+        rs2 <= "0000000000000000000000000000000000000000000000000000000000000000";
+        wait for PROPAGATION_DELAY;
+        assert eq = '0' report "testbench failed for ALU eq status signal (2)" severity error;
+        assert lt = '1' report "testbench failed for ALU lt status signal (2)" severity error;
+        assert ltu = '0' report "testbench failed for ALU ltu status signal (2)" severity error;
+        rs1 <= "0000000000000000000000000000000000000000000000000000000000000000";
+        rs2 <= "1000000000000000000000000000000000000000000000000000000000000000";
+        wait for PROPAGATION_DELAY;
+        assert eq = '0' report "testbench failed for ALU eq status signal (3)" severity error;
+        assert lt = '0' report "testbench failed for ALU lt status signal (3)" severity error;
+        assert ltu = '1' report "testbench failed for ALU ltu status signal (3)" severity error;
         wait;
     end process;
 end architecture;

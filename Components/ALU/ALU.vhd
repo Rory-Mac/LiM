@@ -7,12 +7,16 @@ use xil_defaultlib.ISAListings.all;
 
 entity ALU is
 port (
-    rs1, rs2 : in signed(0 to 63);
-    imm : in signed(0 to 11);
+    -- control bits
     opcode : in std_logic_vector(0 to 6);
     funct3 : in std_logic_vector(0 to 2);
     funct7 : in std_logic_vector(0 to 6);
-    rd : out signed(0 to 63)
+    -- operands
+    imm : in signed(0 to 11);
+    rs1, rs2 : in signed(0 to 63);
+    rd : out signed(0 to 63);
+    -- status bits
+    eq, lt, ltu : out std_logic
 );
 end entity;
 
@@ -51,6 +55,14 @@ begin
     imm_SLLIW <= resize(signed(imm_SLL(32 to 63)), 64);
     imm_SRLIW <= resize(signed(imm_SRL(32 to 63)), 64);
     imm_SRAIW <= resize(signed(imm_SRA(32 to 63)), 64);
+    -- create status signal output for control unit branching
+    process (rs1, rs2)
+    begin
+        if rs1 = rs2 then eq <= '1'; else eq <= '0'; end if;
+        if rs1 < rs2 then lt <= '1'; else lt <= '0'; end if;
+        if unsigned(rs1) < unsigned(rs2) then ltu <= '1'; else ltu <= '0'; end if;
+    end process;
+    -- route all computed arithmetic and logic signals
     process (rs1, rs2, imm, opcode, funct3, funct7,
         register_ADD, imm_ADD, imm_zero_promoted, imm_msb_promoted, imm_ADDIW, register_ADD, register_SUB,
         register_XOR, register_OR, register_AND, register_SLL, register_SRL, register_SRA, imm_zero_promoted,

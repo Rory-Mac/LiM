@@ -10,10 +10,11 @@ entity BRAM_Access_wrapper is
         clk : in std_logic;
         opcode : in std_logic_vector(0 to 6);
         funct3 : in std_logic_vector(0 to 2);
+        offset : in signed(0 to 11);
         data_addr, instr_addr : in std_logic_vector(15 downto 0);
-        data_in, instr_in : in std_logic_vector(63 downto 0);
-        instr_out : out std_logic_vector(63 downto 0);
-        data_out : out signed(63 downto 0)
+        data_in: in std_logic_vector(63 downto 0);
+        data_out : out signed(63 downto 0);
+        instr_out : out std_logic_vector(63 downto 0)
     );
 end BRAM_Access_wrapper;
 
@@ -28,23 +29,25 @@ architecture STRUCTURE of BRAM_Access_wrapper is
     );
     end component BRAM_Access;
     signal w_data, w_instr : std_logic;
+    signal offset_address : std_logic_vector(0 to 15);
     signal loaded_value : std_logic_vector(63 downto 0);
+    signal stored_value : signed(63 downto 0);
     signal load_byte_signal, load_halfword_signal, load_word_signal, load_double_signal : signed(0 to 63);
     signal load_byte_signal_u, load_halfword_signal_u, load_word_signal_u : unsigned(0 to 63);
     signal store_byte_signal, store_halfword_signal, store_word_signal, store_double_signal : signed(0 to 63);
 begin
-BRAM_Access_i: component BRAM_Access
-    -- instantiate BRAM component
+    offset_address <= std_logic_vector(unsigned(data_addr) + unsigned(resize(offset, 16)));
+    BRAM_Access_i: component BRAM_Access
     port map (
         clk => clk,
-        data_addr(15 downto 0) => data_addr(15 downto 0),
-        data_in(63 downto 0) => data_in(63 downto 0),
+        data_addr(15 downto 0) => offset_address,
+        data_in(63 downto 0) => std_logic_vector(stored_value(63 downto 0)),
         data_out(63 downto 0) => loaded_value,
         instr_addr(15 downto 0) => instr_addr(15 downto 0),
-        instr_in(63 downto 0) => instr_in,
+        instr_in(63 downto 0) => (others => '0'), -- unused
         instr_out(63 downto 0) => instr_out(63 downto 0),
         w_data => w_data,
-        w_instr => w_instr
+        w_instr => '0' -- unused
     );
     -- initialise load and store signals
     load_byte_signal <= resize(signed(loaded_value(7 downto 0)), 64);
@@ -77,13 +80,16 @@ BRAM_Access_i: component BRAM_Access
             end case;
         elsif opcode = STORE then
             w_data <= '1';
+            data_out <= signed(loaded_value);
             case funct3 is 
-                when S_SB => data_out <= store_byte_signal;
-                when S_SH => data_out <= store_halfword_signal;
-                when S_SW => data_out <= store_word_signal;
-                when S_SD => data_out <= store_double_signal;
+                when S_SB => stored_value <= store_byte_signal;
+                when S_SH => stored_value <= store_halfword_signal;
+                when S_SW => stored_value <= store_word_signal;
+                when S_SD => stored_value <= store_double_signal;
                 when others => null;
             end case;
+        else 
+            w_data <= '0';
         end if;
     end process;
 end STRUCTURE;
