@@ -23,7 +23,7 @@ begin
     begin
         if rising_edge(clk) then
             if rd_sel = "00000" then null;
-            elsif (opcode = OP or opcode = OP_32 or opcode = OP_IMM or opcode = OP_IMM_32) then
+            elsif (opcode = OP or opcode = OP_32 or opcode = OP_IMM or opcode = OP_IMM_32 or opcode = JAL or opcode = JALR) then
                 stored_values(to_integer(unsigned(rd_sel))) <= rd_in;
             elsif opcode = LUI then 
                 stored_values(to_integer(unsigned(rd_sel))) <= resize(signed(upper_imm & "000000000000"), 64);
