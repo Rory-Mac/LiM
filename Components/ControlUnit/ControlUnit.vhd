@@ -36,6 +36,7 @@ architecture ControlUnitLogic of ControlUnit is
     signal auipc_signal : signed(0 to 31);
     signal jalr_signal : unsigned(0 to 63);
     -- intermediate signals
+    signal funct3_internal : std_logic_vector(2 downto 0);
     signal opcode_internal : std_logic_vector(6 downto 0);
     signal I_imm_internal, U_imm_internal : signed(63 downto 0);
 begin
@@ -46,12 +47,13 @@ begin
     rd_sel <= std_logic_vector(instruction_register(11 downto 7));
     rs_sel <= std_logic_vector(instruction_register(19 downto 15));
     rt_sel <= std_logic_vector(instruction_register(24 downto 20));
-    funct3 <= std_logic_vector(instruction_register(14 downto 12));
+    funct3_internal <= std_logic_vector(instruction_register(14 downto 12));
+    funct3 <= funct3_internal;
     funct7 <= std_logic_vector(instruction_register(31 downto 25));
     I_imm_internal  <= resize(instruction_register(31 downto 20), 64);
     I_imm <= I_imm_internal;
     S_imm  <= resize(instruction_register(31 downto 25) & instruction_register(11 downto 7), 64);
-    B_imm  <= resize(instruction_register(31) & instruction_register(7) and instruction_register(30 downto 25) & instruction_register(11 downto 8) & '0', 64);
+    B_imm  <= resize(instruction_register(31) & instruction_register(7) & instruction_register(30 downto 25) & instruction_register(11 downto 8) & '0', 64);
     U_imm_internal <= resize(instruction_register(31 downto 12) & "000000000000", 64);
     U_imm <= U_imm_internal;
     J_imm  <= resize(instruction_register(31) & instruction_register(19 downto 12) & instruction_register(20) & instruction_register(30 downto 21) & '0', 64);
@@ -62,19 +64,19 @@ begin
         if rising_edge(clk) then
             instruction_register <= instruction;
             if opcode_internal = BRANCH then
-                if (funct3 = B_BEQ and eq = '1') or
-                (funct3 = B_BNE and eq = '0') or
-                (funct3 = B_BLT and lt = '1') or
-                (funct3 = B_BGE and lt = '0') or
-                (funct3 = B_BLTU and ltu = '1') or
-                (funct3 = B_BGEU and ltu = '0') then
-                    program_counter <= program_counter + unsigned(resize(imm, 16));
+                if (funct3_internal = B_BEQ and eq = '1') or
+                (funct3_internal = B_BNE and eq = '0') or
+                (funct3_internal = B_BLT and lt = '1') or
+                (funct3_internal = B_BGE and lt = '0') or
+                (funct3_internal = B_BLTU and ltu = '1') or
+                (funct3_internal = B_BGEU and ltu = '0') then
+                    program_counter <= program_counter + unsigned(I_imm_internal(15 downto 0));
                 else
                     program_counter <= program_counter + 4;
                 end if;
             elsif opcode_internal = JAL then
                 ra <= resize(signed(program_counter + 4), 64);
-                program_counter <= program_counter + unsigned(upper_imm(4 to 19));
+                program_counter <= program_counter + unsigned(U_imm_internal(15 downto 0));
             elsif opcode_internal = JALR then
                 ra <= resize(signed(program_counter + 4), 64);
                 program_counter <= jalr_signal(48 to 63);
