@@ -11,6 +11,8 @@ fibonacci:
     beq s1, s0, fibonacci_end
     j fibonacci
 fibonacci_end:
-    sw rs2, 0
+    mv a0, a1                   -- print resulting integer
+    mv a1, s0
+    system
 main_end:
     j main_end
