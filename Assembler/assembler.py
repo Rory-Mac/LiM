@@ -2,17 +2,97 @@ import re
 import sys
 import os
 
-OP_operator = r"ADD\|SUB\|XOR\|OR\|AND\|SLL\|SRL\|SRA\|SLT\|SLTU" # R-formatted
-OP_32_operator = r"ADDW\|SUBW\|SLLW\|SRLW\|SRAW" # R-formatted
-OP_IMM_operator = r"ADDI\|SUBI\|XORI\|ORI\|ANDI\|SLLI\|SRLI\|SRAI\|SLTI\|SLTIU" # I-formatted
-OP_IMM_32_operator = r"ADDIW\|SUBIW\|SLLIW\|SRLIW\|SRAIW" # I-formatted
-LOAD_operator = r"LB\|LH\|LW\|LBU\|LHU\|LD\|LWU" # I-formatted
-STORE_operator = r"SB\|SH\|SW\|SD" # S-formatted
+#-------------------------------------------------------------------------------------------------------------------------
+# All regular expressions used in the assembly pipeline are declared here
+#-------------------------------------------------------------------------------------------------------------------------
 core_register = r"(zero\|ra\|sp\|gp\|tp\|t[0-6]\|fp\|s[0-11]\|a[0-7])"
 symbol_expression = r"[a-zA-Z0-9_]+"
 multiline_pseudoinstruction = r"^\s*(ret\|call\|tail\|la\|li\|(l[bhwd]\s+" + core_register + r",\s+[a-zA-Z0-9_]{3,}))\s*$"
-
-core_register_map = {
+comments = r"((--)\|#).*"
+whitespace = r"\s+"
+leading_trailing_whitespace = r"^\s+\|\s+$"
+#-------------------------------------------------------------------------------------------------------------------------
+# Dictionary maps mapping instruction symbols to binary representations are declared here  
+#-------------------------------------------------------------------------------------------------------------------------
+instruction_opcodes = dict.fromkeys(["ADD", "SUB", "XOR", "OR", "AND", "SLL", "SRL", "SRA", "SLT", "SLTU"], "OP")
+instruction_opcodes.update(dict.fromkeys["ADDW", "SUBW", "SLLW", "SRLW", "SRAW"], "OP_32")
+instruction_opcodes.update(dict.fromkeys["ADDI", "SUBI", "XORI", "ORI", "ANDI", "SLLI", "SRLI", "SRAI", "SLTI", "SLTIU"], "OP_IMM")
+instruction_opcodes.update(dict.fromkeys["ADDIW", "SUBIW", "SLLIW", "SRLIW", "SRAIW",], "OP_IMM_32")
+instruction_opcodes.update(dict.fromkeys["LB", "LH", "LW", "LBU", "LHU", "LD", "LWU"], "LOAD")
+instruction_opcodes.update(dict.fromkeys["SB", "SH", "SW", "SD"], "STORE")
+instruction_opcodes.update(dict.fromkeys["SYSTEM", "ECALL", "EBREAK"], "SYSTEM")
+instruction_opcodes["JAL"] = "JAL"
+instruction_opcodes["JALR"] = "JALR"
+instruction_opcodes["LUI"] = "LUI"
+instruction_opcodes["AUIPC"] = "AUIPC"
+instruction_opcodes["SYSTEM"] = "SYSTEM"
+opcodes = {
+    "OP" : "0110011",
+    "OP_32" : "0111011",
+    "OP_IMM" : "0010011",
+    "OP_IMM_32" : "0011011",
+    "LOAD" : "0000011",
+    "STORE" : "0100011",
+    "BRANCH" : "1100011",
+    "JAL" : "1101111",
+    "JALR" : "1100111",
+    "LUI" : "0110111",
+    "AUIPC" : "0010111",
+    "SYSTEM" : "1110011",
+}
+R_type = ["ADD", "SUB", "XOR", "OR", "AND", "SLL", "SRL", "SRA", "SLT", "SLTU"]
+R_type_bits = {
+    "ADD" : {"funct3" : "000", "funct7" : "0000000"},
+    "SUB" : {"funct3" : "000", "funct7" : "0100000"},
+    "XOR" : {"funct3" : "100", "funct7" : "0000000"},
+    "OR" : {"funct3" : "110", "funct7" : "0000000"},
+    "AND" : {"funct3" : "111", "funct7" : "0000000"},
+    "SLL" : {"funct3" : "001", "funct7" : "0000000"},
+    "SRL" : {"funct3" : "101", "funct7" : "0000000"},
+    "SRA" : {"funct3" : "101", "funct7" : "0100000"},
+    "SLT" : {"funct3" : "010", "funct7" : "0000000"},
+    "SLTU" : {"funct3" : "011", "funct7" : "0000000"},
+}
+I_type = ["ADDI", "XORI", "ORI", "ANDI", "SLLI", "SRLI", "SRAI", "SLTI", "SLTIU", "JALR"]
+I_type_bits = {
+    "ADDI" : {"funct3" : "000"},
+    "XORI" : {"funct3" : "100"},
+    "ORI" : {"funct3" : "110"},
+    "ANDI" : {"funct3" : "111"},
+    "SLLI" : {"funct3" : "001", "funct7" : "000000"},
+    "SRLI" : {"funct3" : "101", "funct7" : "000000"},
+    "SRAI" : {"funct3" : "101", "funct7" : "010000"},
+    "SLTI" : {"funct3" : "010"},
+    "SLTIU" : {"funct3" : "011"},
+    "JALR" : {"funct3" : "000"},
+}
+I_type_load = ["LB", "LH", "LW", "LBU", "LHU"]
+I_type_load_bits = {
+    "LB" : {"funct3" : "000"},
+    "LH" : {"funct3" : "001"},
+    "LW" : {"funct3" : "010"},
+    "LBU" : {"funct3" : "100"},
+    "LHU" : {"funct3" : "101"},
+}
+S_type = ["SB", "SH", "SW"]
+S_type_bits = {
+    "SB" : {"funct3" : "000"},
+    "SH" : {"funct3" : "001"},
+    "SW" : {"funct3" : "010"},
+}
+B_type = ["BEQ", "BNE", "BLT", "BGE", "BLTU", "BGEU"]
+B_type_bits = {
+    "BEQ" : {"funct3" : "000"},
+    "BNE" : {"funct3" : "001"},
+    "BLT" : {"funct3" : "100"},
+    "BGE" : {"funct3" : "101"},
+    "BLTU" : {"funct3" : "110"},
+    "BGEU" : {"funct3" : "111"},
+}
+U_type = ["LUI", "AUIPC"]
+J_type = ["JAL"]
+SYSTEM_type = ["SYSTEM", "ECALL", "EBREAK"]
+registers = {
     "zero" : "00000",
     "ra" : "00001",
     "sp" : "00010",
@@ -47,23 +127,33 @@ core_register_map = {
     "t5" : "11110",
     "t6" : "11111",
 }
-
-# first passover: symbol to address translation + comment removal
-with open(os.getcwd() + "/Assembler/" + sys.argv[1], 'r') as read_file:
-    with open(os.getcwd() + "/Assembler/" + sys.argv[1][-2] + "_1.temp", 'w') as write_file:
+#-------------------------------------------------------------------------------------------------------------------------
+# command line flags and arguments
+#-------------------------------------------------------------------------------------------------------------------------
+asm_filepath = os.getcwd() + "/Assembler/assembly_files" + sys.argv[1]
+temp1_filepath = asm_filepath[-2] + "_1.temp"
+temp2_filepath = asm_filepath[-2] + "_2.temp"
+a_flag = "-a" in sys.argv
+output_file = asm_filepath[-2] + ".txt" if a_flag else asm_filepath[-2] + ".exe" 
+exe_filepath = asm_filepath[-2] + ".exe"
+#-------------------------------------------------------------------------------------------------------------------------
+# perform first passover (symbol to address translation + comment removal)
+#-------------------------------------------------------------------------------------------------------------------------
+with open(asm_filepath, 'r') as read_file:
+    with open(temp1_filepath, 'w') as write_file:
         instruction_counter = 0
-        symbol_map = {} # symbol-address map
+        symbol_table = {}
         for line in read_file:
             if instruction == "": continue
-            instruction = re.sub(r"^\s+\|\s+$\|,", r"", re.sub(r"\s+", " ", re.sub(r"((--)\|#).*", "", line))) # remove commas + leading/trailing/excess whitespace
+            instruction = re.sub(leading_trailing_whitespace + r"\|,", "", re.sub(whitespace, " ", re.sub(comments, "", line)))
             # manage function declarations
             instruction_words = re.match(symbol + ":")
             if instruction_words:
                 instruction_words.split(r"\s", instruction)
                 symbol = instruction_words[0][:-1]
-                if symbol in symbol_map: 
+                if symbol in symbol_table: 
                     raise Exception("Duplicate function declaration: " + symbol)
-                symbol_map[symbol] = instruction_counter + 1
+                symbol_table[symbol] = instruction_counter + 1
                 continue
             write_file.write(instruction)
             # manage pseudo-instructions (a subset of pseudo-instructions assemble to two instructions rather than one)
@@ -72,12 +162,13 @@ with open(os.getcwd() + "/Assembler/" + sys.argv[1], 'r') as read_file:
                 instruction_counter += 2
                 continue
             instruction_counter += 1
-
-# second passover: deconstruct pseudo-instructions
-with open(os.getcwd() + "/Assembler/" + sys.argv[1][-2] + "_1.temp", 'r') as read_file:
-    with open(os.getcwd() + "/Assembler/" + sys.argv[1][-2] + "_2.temp", 'w') as write_file:
+#-------------------------------------------------------------------------------------------------------------------------
+# perform second passover (deconstruct pseudo-instructions)
+#-------------------------------------------------------------------------------------------------------------------------
+with open(temp1_filepath, 'r') as read_file:
+    with open(temp2_filepath, 'w') as write_file:
         for line in read_file:
-            instruction_words = instruction.split(r" ")
+            instruction_words = instruction.split(whitespace)
             if instruction_words[0] == "la":
                 destination_register = instruction_words[1]
                 symbol = instruction_words[2]
@@ -223,12 +314,52 @@ with open(os.getcwd() + "/Assembler/" + sys.argv[1][-2] + "_1.temp", 'r') as rea
                 lower_twelve_bits = str(bin(int(offset)))[20:31]
                 write_file.write(f"auipc t0 {upper_twenty_bits}\n")
                 write_file.write(f"jalr zero t0 {lower_twelve_bits}\n")
-
-# third passover: binary translation
-with open(os.getcwd() + "/Assembler/" + sys.argv[1][-2] + "_2.temp", 'r') as read_file:
-    with open(os.getcwd() + "/Assembler/" + sys.argv[1][-2] + ".coe", 'w') as write_file:
+#-------------------------------------------------------------------------------------------------------------------------
+# perform third passover (binary translation)
+#-------------------------------------------------------------------------------------------------------------------------
+with open(temp2_filepath, 'r') as read_file:
+    with open(output_file, 'w') as write_file:
         write_file.write("memory_initialization_radix=2;\n")
         write_file.write("memory_initialization_vector=\n")
-        # binary instructions end in comma, last instruction ends in semi-colon
         for line in read_file:
-            pass
+            instruction_words = re.split(whitespace, line)
+            operation = instruction_words[0]
+            if operation in R_type:
+                rd = instruction_words[1]
+                rs = instruction_words[2]
+                rt = instruction_words[3]
+                binary_encoding = R_type_bits[operation]["funct7"] + registers[rt] + R_type_bits[operation]["funct3"] + registers[rs] + registers[rd] \
+                    + opcodes[instruction_opcodes[operation]]
+            elif operation in I_type:
+                rd = instruction_words[1]
+                rs = instruction_words[2]
+                imm = instruction_words[3]
+                if operation in ["SLLI", "SRLI", "SRAI"]:
+                    binary_encoding = I_type_bits[operation]["funct7"] + str(bin(imm))[-6] + I_type_bits[operation]["funct3"] + registers[rs] \
+                        + opcodes[instruction_opcodes[operation]]
+                else:
+                    binary_encoding = str(bin(imm))[-16:] + I_type_bits[operation]["funct3"] + registers[rs] + opcodes[instruction_opcodes[operation]]
+            elif operation in S_type:
+                rt = instruction_words[1]
+                rs, offset = re.split(r"\s", re.sub(r"(\|)", " ", instruction_words[2]))
+                offset = str(bin(offset))
+                binary_encoding = str(bin(offset))[-11:-5] + registers[rt] + registers[rs] + S_type_bits[operation]["funct3"] + str(bin(offset))[-4:] \
+                    + opcodes[instruction_opcodes[operation]]
+            elif operation in B_type:
+                rs = instruction_words[1]
+                rt = instruction_words[2]
+                offset = instruction_words[3]
+                binary_encoding = str(bin(offset))[12] + str(bin(offset))[-10:-5] + registers[rt] + registers[rs] + B_type_bits[operation]["funct3"] \
+                    + str(bin(offset))[-4:] + str(bin(offset))[11] + opcodes[instruction_opcodes[operation]]
+            elif operation in U_type:
+                rd = instruction_words[1]
+                offset = str(bin(instruction_words[2]))[-20:]
+                binary_encoding = offset + registers[rd] + opcodes[instruction_opcodes[operation]]
+            elif operation in J_type:
+                rd = instruction_words[1]
+                offset = str(bin(instruction_words[2]))[-20:]
+                binary_encoding = offset[-20] + offset[-10:] + offset[-11] + offset[-19:-12] + registers[rd] + opcodes[instruction_opcodes[operation]]
+            if a_flag:
+                write_file.write(f"{line} {binary_encoding}\n")
+            else:
+                write_file.write(bin(binary_encoding))
