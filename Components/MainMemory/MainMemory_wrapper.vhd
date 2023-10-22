@@ -5,29 +5,31 @@ library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
 library xil_defaultlib;
 use xil_defaultlib.ISAListings.all;
-entity BRAM_Access_wrapper is
+entity MainMemory_wrapper is
     port (
         clk : in std_logic;
         opcode : in std_logic_vector(0 to 6);
         funct3 : in std_logic_vector(0 to 2);
-        offset : in signed(0 to 11);
-        data_addr, instr_addr : in std_logic_vector(15 downto 0);
+        LS_offset : in signed(0 to 11);
+        LS_addr : in std_logic_vector(63 downto 0);
+        instr_addr : in std_logic_vector(15 downto 0);
         data_in: in std_logic_vector(63 downto 0);
         data_out : out signed(63 downto 0);
         instr_out : out std_logic_vector(63 downto 0)
     );
-end BRAM_Access_wrapper;
+end MainMemory_wrapper;
 
-architecture STRUCTURE of BRAM_Access_wrapper is
-    component BRAM_Access is
+architecture STRUCTURE of MainMemory_wrapper is
+    component MainMemory is
     port (
         clk : in STD_LOGIC;
         w_data, w_instr : in STD_LOGIC;
         data_out, instr_out : out STD_LOGIC_VECTOR ( 63 downto 0 );
         data_in, instr_in : in STD_LOGIC_VECTOR ( 63 downto 0 );
-        data_addr, instr_addr : in STD_LOGIC_VECTOR ( 15 downto 0 )
+        data_addr : in std_logic_vector(15 downto 0);
+        instr_addr : in STD_LOGIC_VECTOR ( 15 downto 0 )
     );
-    end component BRAM_Access;
+    end component MainMemory;
     signal w_data, w_instr : std_logic;
     signal offset_address : std_logic_vector(0 to 15);
     signal loaded_value : std_logic_vector(63 downto 0);
@@ -36,8 +38,8 @@ architecture STRUCTURE of BRAM_Access_wrapper is
     signal load_byte_signal_u, load_halfword_signal_u, load_word_signal_u : unsigned(0 to 63);
     signal store_byte_signal, store_halfword_signal, store_word_signal, store_double_signal : signed(0 to 63);
 begin
-    offset_address <= std_logic_vector(unsigned(data_addr) + unsigned(resize(offset, 16)));
-    BRAM_Access_i: component BRAM_Access
+    offset_address <= std_logic_vector(unsigned(LS_addr) + unsigned(resize(LS_offset, 16)));
+    MainMemory_instance: component MainMemory
     port map (
         clk => clk,
         data_addr(15 downto 0) => offset_address,

@@ -13,7 +13,8 @@ architecture CoreRegistersTBLogic of CoreRegistersTB is
     constant SIMULATION_LENGTH : time := 1000 ps;
     signal clk : std_logic;
     signal opcode : std_logic_vector(0 to 6);
-    signal upper_imm : std_logic_vector(0 to 19);
+    signal upper_imm : signed(63 downto 0);
+    signal ra, lv : signed(63 downto 0);
     signal rs_sel, rt_sel, rd_sel : std_logic_vector(0 to 4);
     signal rd_in, rs_out, rt_out : signed(0 to 63);
 begin
@@ -21,6 +22,8 @@ begin
         clk => clk, 
         opcode => opcode,
         upper_imm => upper_imm,
+        ra => ra,
+        lv => lv,
         rs_sel => rs_sel,
         rt_sel => rt_sel,
         rd_sel => rd_sel,
@@ -103,12 +106,12 @@ begin
         assert (rs_out = "0000000000000000000000000000000000000000000000000000000000000000") report "testbench failed for CoreRegisters case 12" severity error; 
         -- test lui
         opcode <= LUI;
-        upper_imm <= "11101001001110110011";
+        upper_imm <= "1111111111111111111111111111111111101001001110110011000000000000";
         rs_sel <= "00010";
         rd_sel <= "00010";
         wait for CLOCK_PERIOD;
         assert (rs_out = "1111111111111111111111111111111111101001001110110011000000000000") report "testbench failed for CoreRegisters case 13" severity error;
-        upper_imm <= "01101001001110110011";
+        upper_imm <= "0000000000000000000000000000000001101001001110110011000000000000";
         rd_sel <= "00010";
         wait for CLOCK_PERIOD;
         assert (rs_out = "0000000000000000000000000000000001101001001110110011000000000000") report "testbench failed for CoreRegisters case 14" severity error;

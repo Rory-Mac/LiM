@@ -9,7 +9,8 @@ use xil_defaultlib.array_package.all;
 entity CoreRegisters is
 port (clk: in std_logic;
     opcode : in std_logic_vector(0 to 6);
-    upper_imm : in std_logic_vector(0 to 19);
+    upper_imm : in signed(63 downto 0);
+    ra, lv : in signed(63 downto 0);
     rs_sel, rt_sel, rd_sel : in std_logic_vector(0 to 4);
     rd_in : in signed(0 to 63);
     rs_out, rt_out: out signed(0 to 63));
@@ -23,10 +24,14 @@ begin
     begin
         if rising_edge(clk) then
             if rd_sel = "00000" then null;
-            elsif (opcode = OP or opcode = OP_32 or opcode = OP_IMM or opcode = OP_IMM_32 or opcode = JAL or opcode = JALR) then
+            elsif (opcode = OP or opcode = OP_32 or opcode = OP_IMM or opcode = OP_IMM_32) then
                 stored_values(to_integer(unsigned(rd_sel))) <= rd_in;
+            elsif (opcode = JAL or opcode = JALR) then
+                stored_values(to_integer(unsigned(rd_sel))) <= ra;
+            elsif (opcode = LOAD) then
+                stored_values(to_integer(unsigned(rd_sel))) <= lv;
             elsif opcode = LUI then 
-                stored_values(to_integer(unsigned(rd_sel))) <= resize(signed(upper_imm & "000000000000"), 64);
+                stored_values(to_integer(unsigned(rd_sel))) <= upper_imm;
             end if;
         end if;
     end process;
