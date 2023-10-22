@@ -6,8 +6,7 @@ as well as an assembler written in python, and a compiler written in Haskell. Th
 virtual machines from the ground up. Room for project extension includes,
 - use of Vivado's MIG Wizard to create AXI interface between fabric logic and onboard DDRL3 Memory (64KB -> 256MB available memory + cleaner 32-bit addressing)
 - use of AXI/Ethernet interface for simple RTL between fabric logic and host OS, foremost application would be simple video graphics and keypress IO
-- control/status registers, interrupt handling and address decoder circuitry
+- control/status registers, interrupt handling and address decoder circuitry for larger MMIO
 - RiSC-V "M" Standard Extension for Integer Multiplication and Division (evolve single-cycle processor to multi-cycle or pipelined processor)
 - RiSC-V "F"/"D" Standard Extension for Single-Precision/Double-Precision Floating-Point
-- add Linker and File System
-- add simple OS for multithreading and process management, use bootROM in place of BRAM initialisation
+- add Linker, File System, simple OS for multithreading and process management, and bootROM (to replace BRAM initialisation)
